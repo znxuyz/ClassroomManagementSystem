@@ -17,6 +17,20 @@ function switchView(name) {
   if (name === 'territory') renderTerritoryView();
 }
 
+/* 重畫目前停留的那一頁。
+   renderAll() 只負責後台、測驗、報表那幾塊;座位表、點名、聯絡簿、
+   商店、領地戰是切到該分頁時才畫的,所以換班之後若不補這一下,
+   畫面會停在上一個班級的內容。 */
+function renderActiveView() {
+  const view = document.querySelector('.view.active');
+  if (!view) return;
+  const name = view.id.replace(/View$/, '');
+  switchView(name);
+
+  const sub = view.querySelector('.sub-tab.active');
+  if (sub) switchSubTab(name, sub.dataset.subtab);
+}
+
 function switchSubTab(parent, subtab) {
   const container = document.getElementById(parent + 'View');
   container.querySelectorAll('.sub-tab').forEach(t => {

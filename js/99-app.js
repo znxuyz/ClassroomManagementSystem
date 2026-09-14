@@ -4,8 +4,12 @@
 ============================================ */
 
 function renderAll() {
+  // 雲端模式的班級名稱由頁首的下拉選單顯示,這裡就不重複一次
   const header = document.getElementById('headerClassName');
-  if (header) header.textContent = state.className;
+  if (header) {
+    header.textContent = state.className;
+    header.style.display = state.classId ? 'none' : '';
+  }
   
   const teacher = document.getElementById('headerTeacherName');
   if (teacher) teacher.textContent = state.teacherName;

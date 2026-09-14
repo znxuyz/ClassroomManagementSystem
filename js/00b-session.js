@@ -124,6 +124,7 @@ const Session = {
       toast('找不到這個班級,可能已被刪除');
       return;
     }
+    resetPerClassUiState();
     applyBlobToState(doc.blob || {});
     state.classId = classId;
     state.joinCode = doc.joinCode;
@@ -131,6 +132,7 @@ const Session = {
     state.teacherName = doc.teacherName || state.teacherName;
     updateSyncStatus('saved');
     showApp();
+    renderActiveView();      // 換班後,目前停留的那一頁也要換成新班級的內容
 
     watchCurrentClass();
     PurchaseWatch.start();
@@ -189,6 +191,26 @@ function stopWatchingClass() {
 }
 
 /* ============================================
+   換班時要清掉的暫存狀態
+   ────────────────────────────────────────────
+   這些不在雲端 blob 裡,但都屬於某一個班:座位表排到一半的樣子、
+   抽籤紀錄、正在看的日期。不清掉的話,換班後座位表還擺著上一班的人
+   (學生 id 對不上,格子會變成空的),抽籤紀錄也還是上一班的。
+
+   只在開啟/切換班級時呼叫,不能放進 applyBlobToState() ——
+   那個函式每次雲端推送都會跑,會把老師正在排的座位表洗掉。
+============================================ */
+function resetPerClassUiState() {
+  state.currentLayout = null;
+  state.pickerHistory = [];
+  state.pickerLastResult = [];
+  state.pendingPetSelection = null;
+  state.pendingPetSpecies = null;
+  state.currentAttendanceDate = null;
+  state.currentContactDate = null;
+}
+
+/* ============================================
    把雲端 blob 套進 state,並補齊舊資料缺少的欄位
 ============================================ */
 function applyBlobToState(blob) {
@@ -212,6 +234,7 @@ function applyBlobToState(blob) {
   state.quizzes       = blob.quizzes || [];
   state.selectedStudentId = null;
   state.students.forEach(migrateStudent);
+
 }
 
 /* ============================================

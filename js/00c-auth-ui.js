@@ -181,23 +181,38 @@ async function enterStudentView(classInfo) {
 
 /* ---------- 老師端頂部的班級切換器 ---------- */
 
+/* 頁首的班級控制。
+   原本是「班級名稱 + 下拉選單 + 全部班級按鈕」三個東西講同一件事,
+   收成一個下拉:選單本身就顯示目前班級,最後一項進班級管理。 */
 function renderClassSwitcher() {
   const el = document.getElementById('classSwitcher');
   if (!el) return;
-  if (!state.classId || state.myClasses.length === 0) {
-    el.innerHTML = '';
-    return;
-  }
+  if (!state.classId) { el.innerHTML = ''; return; }
+
+  const many = state.myClasses.length > 1;
   const options = state.myClasses.map(c =>
     `<option value="${c.id}" ${c.id === state.classId ? 'selected' : ''}>${escapeHtml(c.className)}</option>`
   ).join('');
+
   el.innerHTML = `
-    <select class="class-switcher-select" onchange="Session.switchClass(this.value)">
+    <select class="class-switcher-select" title="切換班級"
+            onchange="onClassSwitcherChange(this)">
       ${options}
+      ${many ? '<option disabled>──────────</option>' : ''}
+      <option value="__manage">管理班級…</option>
     </select>
-    <button class="btn btn-ghost btn-small" onclick="showClassPicker()">全部班級</button>
     <span id="syncStatus" class="sync-status synced">已同步</span>
   `;
+}
+
+function onClassSwitcherChange(sel) {
+  if (sel.value === '__manage') {
+    sel.value = state.classId;        // 選單自己彈回目前班級
+    showClassPicker();
+    return;
+  }
+  if (sel.value === state.classId) return;
+  Session.switchClass(sel.value);
 }
 
 /* 基本的 HTML 逸出,避免學生姓名含特殊字元時破版 */
