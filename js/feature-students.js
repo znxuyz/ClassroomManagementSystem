@@ -15,7 +15,8 @@ function renderStudentList() {
     const health = PetEngine.getHealth(student);
     const icon = student.pet ? PetEngine.getIcon(student) : '❓';
     const isSelected = student.id === state.selectedStudentId;
-    const seatLabel = student.seatNumber ? `<span style="color:var(--ink-muted);font-size:11px;margin-right:4px;">${student.seatNumber}</span>` : '';
+    const seatLabel = student.seatNumber
+      ? `<span class="seat-no">${escapeHtml(String(student.seatNumber))}</span> ` : '';
     
     return `
       <li class="student-item ${isSelected ? 'selected' : ''}" onclick="selectStudent('${student.id}')">

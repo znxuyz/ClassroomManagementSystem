@@ -62,7 +62,10 @@ function renderAttendance() {
     return `
       <div class="attendance-row status-${status}">
         <div class="student-avatar" style="width:36px;height:36px;font-size:18px;">${icon}</div>
-        <div class="attendance-row-name">${s.name}</div>
+        <div class="attendance-row-name">
+          ${s.seatNumber ? `<span class="seat-no">${escapeHtml(String(s.seatNumber))}</span>` : ''}
+          ${escapeHtml(s.name)}
+        </div>
         <div class="status-btns">
           <button class="status-btn btn-present ${status === 'present' ? 'active' : ''}" 
             onclick="setAttendance('${s.id}', 'present')" title="出席">✓</button>

@@ -153,6 +153,10 @@
 
 .seat-name {
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 .seat-remove {
@@ -336,6 +340,9 @@
 .group-member-name {
   font-weight: 600;
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .group-member-points {

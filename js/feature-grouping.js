@@ -124,7 +124,10 @@ function renderGroups(groups) {
             return `
               <div class="group-member">
                 <div class="group-member-icon">${icon}</div>
-                <div class="group-member-name">${m.name}</div>
+                <div class="group-member-name">
+                  ${m.seatNumber ? `<span class="seat-no">${escapeHtml(String(m.seatNumber))}</span>` : ''}
+                  ${escapeHtml(m.name)}
+                </div>
                 <div class="group-member-points">${m.totalPoints} 分</div>
               </div>
             `;
@@ -175,7 +178,10 @@ function renderManualGrouping() {
                 ondragstart="onManualMemberDragStart(event, '${m.id}', ${i})"
                 style="cursor: grab;">
                 <div class="group-member-icon">${icon}</div>
-                <div class="group-member-name">${m.name}</div>
+                <div class="group-member-name">
+                  ${m.seatNumber ? `<span class="seat-no">${escapeHtml(String(m.seatNumber))}</span>` : ''}
+                  ${escapeHtml(m.name)}
+                </div>
                 <button onclick="removeFromManualGroup('${m.id}', ${i})" 
                   style="background:none;border:none;color:var(--sick);cursor:pointer;font-size:14px;padding:2px 6px;" title="移出此組">✕</button>
               </div>

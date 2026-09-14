@@ -340,3 +340,26 @@
 .sub-view.active {
   display: block;
 }
+
+/* ============================================
+   座號徽章(座位表 / 名單 / 點名 / 分組共用)
+   ────────────────────────────────────────────
+   等寬數字 + 固定最小寬度,一整排看下來才會對齊。
+============================================ */
+
+.seat-no {
+  display: inline-block;
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--paper-shadow);
+  color: var(--ink-soft);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.seat.occupied .seat-no { background: rgba(255, 255, 255, 0.5); }

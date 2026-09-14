@@ -43,7 +43,11 @@ function rebuildSeatingGrid() {
             <button class="seat-remove" onclick="removeFromSeat('${key}')">✕</button>
             <div class="seat-content">
               <div class="seat-icon">${icon}</div>
-              <div class="seat-name">${student.name}</div>
+              <div class="seat-name">
+                ${student.seatNumber
+                  ? `<span class="seat-no">${escapeHtml(String(student.seatNumber))}</span>` : ''}
+                ${escapeHtml(student.name)}
+              </div>
             </div>
           </div>
         `;
@@ -68,7 +72,8 @@ function renderSeatingPool() {
   if (!state.currentLayout) return;
   
   const seated = new Set(Object.values(state.currentLayout.grid));
-  const unseated = state.students.filter(s => !seated.has(s.id));
+  // 依座號排序,老師要找某一號才不用一個一個看
+  const unseated = state.students.filter(s => !seated.has(s.id)).sort(bySeatNumber);
   
   if (unseated.length === 0) {
     pool.innerHTML = '<div class="text-muted" style="font-size: 12px;">所有學生都已入座</div>';
@@ -82,7 +87,8 @@ function renderSeatingPool() {
         draggable="true"
         ondragstart="onPoolDragStart(event, '${s.id}')">
         <span class="seating-chip-icon">${icon}</span>
-        <span>${s.name}</span>
+        ${s.seatNumber ? `<span class="seat-no">${escapeHtml(String(s.seatNumber))}</span>` : ''}
+        <span>${escapeHtml(s.name)}</span>
       </div>
     `;
   }).join('');
