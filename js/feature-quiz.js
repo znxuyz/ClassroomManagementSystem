@@ -16,41 +16,92 @@ const QUESTION_TYPES = {
   short: '簡答題'
 };
 
-function createQuiz() {
-  const title = document.getElementById('quizTitle').value.trim();
-  const dueDate = document.getElementById('quizDueDate').value;
-  const pointsPer = parseInt(document.getElementById('quizPoints').value) || 1;
+/* 讀取建立表單的設定。手動建立與 Excel 匯入共用同一組設定,
+   兩邊才不會有一邊支援結算時間、另一邊沒有的落差。 */
+function readQuizForm() {
+  const settleRaw = document.getElementById('quizSettleAt').value;
+  return {
+    title: document.getElementById('quizTitle').value.trim(),
+    dueDate: document.getElementById('quizDueDate').value || '',
+    pointsPerQuestion: parseInt(document.getElementById('quizPoints').value) || 1,
+    scoreMode: document.getElementById('quizScoreMode').value,
+    topN: parseInt(document.getElementById('quizTopN').value) || 5,
+    // 統一結算時間。設了之後,時間到之前一律不批改也不發分,
+    // 學生只會看到「已交卷」。時間到、老師一開系統就自動算完。
+    settleAt: settleRaw ? new Date(settleRaw).getTime() : 0
+  };
+}
 
-  if (!title) {
+function clearQuizForm() {
+  document.getElementById('quizTitle').value = '';
+  document.getElementById('quizDueDate').value = '';
+  document.getElementById('quizSettleAt').value = '';
+}
+
+function newQuiz(form, questions) {
+  return {
+    ...form,
+    id: 'qz_' + Date.now(),
+    questions: questions || [],
+    status: 'draft',          // draft(編輯中) / open(開放作答) / closed(已結束)
+    createdAt: Date.now()
+  };
+}
+
+function createQuiz() {
+  const form = readQuizForm();
+  if (!form.title) {
     toast('請輸入測驗名稱');
     return;
   }
 
-  const scoreMode = document.getElementById('quizScoreMode').value;
-  const topN = parseInt(document.getElementById('quizTopN').value) || 5;
-  const settleRaw = document.getElementById('quizSettleAt').value;
-
-  state.quizzes.unshift({
-    id: 'qz_' + Date.now(),
-    title,
-    dueDate: dueDate || '',
-    pointsPerQuestion: pointsPer,
-    scoreMode,                // all(答對就得分) / topN(前 N 名得分)
-    topN,
-    // 統一結算時間。設了之後,時間到之前一律不批改也不發分,
-    // 學生只會看到「已交卷」。時間到、老師一開系統就自動算完。
-    settleAt: settleRaw ? new Date(settleRaw).getTime() : 0,
-    questions: [],
-    status: 'draft',          // draft(編輯中) / open(開放作答) / closed(已結束)
-    createdAt: Date.now()
-  });
-
-  document.getElementById('quizTitle').value = '';
-  document.getElementById('quizDueDate').value = '';
-  document.getElementById('quizSettleAt').value = '';
+  state.quizzes.unshift(newQuiz(form));
+  clearQuizForm();
   save();
   renderQuizList();
   toast('測驗已建立,接著新增題目');
+}
+
+/* 一鍵匯入:選一個 Excel,直接建立整份測驗(設定用上方表單的)。
+   測驗名稱留空就用檔名 —— 老師常把檔案取名成「國語第三課」,
+   那本來就是測驗的名字。 */
+function createQuizFromExcel() {
+  const form = readQuizForm();
+
+  ExcelImport.pickFile((rows, filename) => {
+    const result = QuestionImport.parse(rows);
+    if (result.error) { toast(result.error); return; }
+    if (result.questions.length === 0) {
+      toast('沒有讀到任何有效題目');
+      if (result.warnings.length) alert('問題如下:\n\n' + result.warnings.join('\n'));
+      return;
+    }
+
+    const now = Date.now();
+    const questions = result.questions.map((q, i) => ({
+      id: 'q_' + now + '_' + i,
+      type: q.type,
+      text: q.text,
+      // 選擇題固定四個欄位,編輯畫面才不會少格
+      options: q.type === 'choice'
+        ? [q.options[0] || '', q.options[1] || '', q.options[2] || '', q.options[3] || '']
+        : ['', '', '', ''],
+      answer: q.answer
+    }));
+
+    form.title = form.title || filename.replace(/\.[^.]+$/, '');
+    state.quizzes.unshift(newQuiz(form, questions));
+
+    clearQuizForm();
+    save();
+    renderQuizList();
+    toast(`✦ 已建立「${form.title}」,共 ${questions.length} 題`);
+
+    if (result.warnings.length) {
+      setTimeout(() => alert(`有 ${result.warnings.length} 列被略過:\n\n` +
+        result.warnings.slice(0, 20).join('\n')), 800);
+    }
+  });
 }
 
 /* 今晚 12 點 = 明天 00:00 */
