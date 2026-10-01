@@ -117,13 +117,18 @@ const Session = {
     await this.openClass(id);
   },
 
-  /* 載入某個班級的資料到 state,並進入主介面 */
+  /* 載入某個班級的資料到 state,並進入主介面。
+     SwitchHUD.mark() 在沒開提示時是空操作,所以正常開班也能照呼叫。 */
   async openClass(classId) {
+    await SwitchHUD.step('load');
     const doc = await Cloud.loadClass(classId);
     if (!doc) {
       toast('找不到這個班級,可能已被刪除');
+      SwitchHUD.fail('找不到這個班級,可能已被刪除');
       return;
     }
+
+    await SwitchHUD.step('apply');
     resetPerClassUiState();
     applyBlobToState(doc.blob || {});
     state.classId = classId;
@@ -131,27 +136,47 @@ const Session = {
     state.className = doc.className || state.className;
     state.teacherName = doc.teacherName || state.teacherName;
     updateSyncStatus('saved');
-    showApp();
-    renderActiveView();      // 換班後,目前停留的那一頁也要換成新班級的內容
 
+    await SwitchHUD.step('attach');
     watchCurrentClass();
     PurchaseWatch.start();
     TerritoryGame.start();
     // 到了統一結算時間的測驗,老師一開系統就算完,不必先切到測驗分頁
     QuizWatch.startDueTimer();
 
-    // 收進學生自己挑好的守護獸(不擋畫面,收完再重繪)
-    applyPendingPetChoices();
+    await SwitchHUD.step('render');
+    showApp();
+    renderActiveView();      // 換班後,目前停留的那一頁也要換成新班級的內容
+
+    // 收進學生自己挑好的守護獸。換班時等它跑完再收起提示,
+    // 這樣提示消失的瞬間畫面就是最終狀態,不會又跳一下。
+    const pending = applyPendingPetChoices();
+    if (SwitchHUD.active) await pending;
   },
 
   /* 切班前先把未送出的寫入補完,避免資料留在上一班 */
   async switchClass(classId) {
-    await flushCloudSave();
-    stopWatchingClass();
-    QuizWatch.stopAll();
-    PurchaseWatch.stop();
-    TerritoryGame.stop();
-    await this.openClass(classId);
+    const target = state.myClasses.find(c => c.id === classId);
+    SwitchHUD.show(target ? target.className : '');
+
+    try {
+      await SwitchHUD.step('save');
+      await flushCloudSave();
+
+      await SwitchHUD.step('detach');
+      stopWatchingClass();
+      QuizWatch.stopAll();
+      PurchaseWatch.stop();
+      TerritoryGame.stop();
+
+      await this.openClass(classId);
+      await SwitchHUD.finish(state.className);
+    } catch (e) {
+      console.error('[Session] 切換班級失敗:', e);
+      SwitchHUD.fail('切換失敗:' + e.message);
+      // 下拉要退回實際還停留的班級,不然選單寫著 602、資料卻還是 601
+      renderClassSwitcher();
+    }
   }
 };
 

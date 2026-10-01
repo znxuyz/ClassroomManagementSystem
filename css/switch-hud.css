@@ -1,0 +1,172 @@
+/* ============================================
+   切換班級的進度提示
+============================================ */
+
+.switch-hud {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 13, 24, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s var(--ease-out);
+}
+
+.switch-hud.is-open {
+  opacity: 1;
+  pointer-events: auto;   /* 切換期間擋住點擊,避免動到還沒換完的資料 */
+}
+
+.switch-hud-panel {
+  position: relative;
+  overflow: hidden;
+  width: min(420px, 90vw);
+  padding: 26px 28px 22px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #0d1424 0%, #131f3a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
+  color: #e7edf5;
+  transform: translateY(8px) scale(0.98);
+  transition: transform 0.28s var(--ease-out);
+}
+
+.switch-hud.is-open .switch-hud-panel { transform: none; }
+
+/* 一道掃過去的光。只是氣氛,不擋任何操作。 */
+.switch-hud-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%,
+              rgba(126, 160, 255, 0.16) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: switchScan 1.9s linear infinite;
+}
+
+@keyframes switchScan {
+  to { transform: translateX(100%); }
+}
+
+.switch-hud-kicker {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: #8fa0c0;
+  margin-bottom: 6px;
+}
+
+.switch-hud-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+.switch-hud-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.switch-hud-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3d59e8, #2de1c2);
+  transition: width 0.3s var(--ease-out);
+}
+
+.switch-hud-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+}
+
+.switch-hud-steps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6d7d99;
+  transition: color 0.2s var(--ease-out);
+}
+
+.switch-hud-steps li.is-doing { color: #e7edf5; }
+.switch-hud-steps li.is-done  { color: #9fb2d4; }
+.switch-hud-steps li.is-fail  { color: #ff8e82; }
+
+.switch-hud-dot {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.is-done .switch-hud-dot {
+  background: rgba(45, 225, 194, 0.18);
+  border-color: rgba(45, 225, 194, 0.5);
+  color: #2de1c2;
+}
+
+.is-doing .switch-hud-dot {
+  border-color: rgba(126, 160, 255, 0.6);
+  background: rgba(61, 89, 232, 0.2);
+}
+
+.is-fail .switch-hud-dot {
+  background: rgba(255, 110, 96, 0.18);
+  border-color: rgba(255, 110, 96, 0.6);
+  color: #ff8e82;
+}
+
+.switch-hud-spin {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #7ea0ff;
+  animation: switchSpin 0.7s linear infinite;
+}
+
+@keyframes switchSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* display:flex 會蓋掉 hidden 屬性,沒這一條的話沒出錯時也會留一條分隔線 */
+.switch-hud-error[hidden] { display: none; }
+
+.switch-hud-error {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  color: #ff8e82;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+/* 會動的東西都尊重系統設定 */
+@media (prefers-reduced-motion: reduce) {
+  .switch-hud-scan { animation: none; }
+  .switch-hud-spin { animation-duration: 2s; }
+  .switch-hud-panel { transition: none; }
+}
