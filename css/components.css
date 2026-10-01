@@ -381,3 +381,32 @@ textarea.custom-points-input {
 }
 
 .seat.occupied .seat-no { background: rgba(255, 255, 255, 0.5); }
+
+/* ============================================
+   表單列裡的按鈕
+   ────────────────────────────────────────────
+   btn-small 單獨出現時 30px 剛好,但只要和輸入框排在同一列,
+   30 對 38 就會看起來沒對齊。這些列裡的按鈕一律跟著欄位的高度走。
+   (清單是實際量過畫面得出的,不是憑印象列的)
+============================================ */
+
+.picker-options .btn,
+.timer-custom-row .btn,
+.quiz-create-form .btn,
+.contact-toolbar .btn,
+.hw-create-form .btn,
+.seating-toolbar .btn,
+.group-controls .btn,
+.shop-create-form .btn,
+.task-create-form .btn,
+.toolbar .btn,
+.custom-points-row .btn,
+.tq-form .btn {
+  height: var(--control-h);
+}
+
+/* 設定頁的欄位是大一號的,同一列的按鈕也要跟著 */
+.api-key-input-row .btn,
+.api-key-hint .btn {
+  height: var(--control-h-lg);
+}
