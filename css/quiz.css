@@ -280,3 +280,111 @@
   font-weight: 700;
   color: var(--ink-muted);
 }
+
+/* ============================================
+   即時作答概況
+============================================ */
+
+.quiz-live-count.is-error {
+  background: rgba(194, 91, 78, 0.14);
+  color: var(--sick);
+}
+
+.quiz-live-board {
+  border-top: 1px solid var(--paper-shadow);
+  padding: 14px 18px 16px;
+}
+
+.live-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.live-stat {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.live-stat.is-done    { background: rgba(74, 124, 98, 0.16);  color: var(--forest); }
+.live-stat.is-working { background: rgba(217, 164, 65, 0.20); color: var(--mild); }
+.live-stat.is-waiting { background: var(--paper-shadow);      color: var(--ink-muted); }
+
+.live-total { color: var(--ink-muted); margin-left: auto; }
+
+/* 一人一格。老師掃一眼就知道誰還沒好 —— 所以主角是名字不是數字。 */
+.live-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  border: 1px solid transparent;
+}
+
+.live-chip.is-done    { background: rgba(74, 124, 98, 0.14); color: var(--forest); }
+.live-chip.is-working { background: rgba(217, 164, 65, 0.18); color: #8a6a14; }
+.live-chip.is-waiting { background: var(--paper-warm); color: var(--ink-muted);
+                        border-color: var(--paper-shadow); }
+
+.live-chip .seat-no { background: rgba(255, 255, 255, 0.6); }
+.live-chip-prog { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.live-empty {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+/* 逐題進度:哪一題卡住一眼看得出來 */
+.live-perq {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--paper-shadow);
+  display: grid;
+  gap: 5px;
+}
+
+.live-perq-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.live-perq-no { width: 56px; flex-shrink: 0; }
+
+.live-perq-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--paper-shadow);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.live-perq-bar i {
+  display: block;
+  height: 100%;
+  background: var(--forest-light);
+  border-radius: 999px;
+  transition: width 0.4s var(--ease-out);
+}
+
+.live-perq-n {
+  width: 26px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--ink-soft);
+}

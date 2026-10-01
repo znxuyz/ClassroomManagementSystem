@@ -353,7 +353,7 @@ const Cloud = {
   },
 
   /* 老師端結算與即時人數用。依伺服器時間排序,先後由伺服器認定。 */
-  watchQuizAnswers(classId, quizId, cb) {
+  watchQuizAnswers(classId, quizId, cb, onError) {
     return this.db.collection('classes').doc(classId)
       .collection('qanswers').where('quizId', '==', quizId)
       .onSnapshot(snap => {
@@ -365,7 +365,10 @@ const Cloud = {
         });
         list.sort((a, b) => a.at - b.at);
         cb(list);
-      }, err => console.warn('[測驗] 逐題作答監聽中斷:', err.message));
+      }, err => {
+        console.warn('[測驗] 逐題作答監聽中斷:', err.message);
+        if (onError) onError(err);
+      });
   },
 
   async listQuizAnswers(classId, quizId) {
@@ -572,11 +575,14 @@ const Cloud = {
     }, err => console.warn('[Cloud] 班級監聽中斷:', err.message));
   },
 
-  watchSubmissions(classId, quizId, cb) {
+  watchSubmissions(classId, quizId, cb, onError) {
     return this.db.collection('classes').doc(classId)
       .collection('submissions').where('quizId', '==', quizId)
       .onSnapshot(snap => {
         cb(snap.docs.map(d => this.normalizeSubmission(d.data())));
-      }, err => console.warn('[Cloud] 作答監聽中斷:', err.message));
+      }, err => {
+        console.warn('[Cloud] 作答監聽中斷:', err.message);
+        if (onError) onError(err);
+      });
   }
 };

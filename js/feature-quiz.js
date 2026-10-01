@@ -502,6 +502,7 @@ const QuizWatch = {
   unsubs: {},          // { quizId: unsubscribe }
   live: {},            // { quizId: [submissions] }
   autoSettle: {},      // { quizId: true } 使用者開啟的即時計分
+  failed: {},          // { quizId: 錯誤訊息 } 監聽失敗時顯示給老師看
   dueTimer: null,
 
   /* 到了結算時間就自動算完。
@@ -550,11 +551,20 @@ const QuizWatch = {
         ? Cloud.watchQuizAnswers : Cloud.watchSubmissions;
 
       this.unsubs[id] = watch.call(Cloud, state.classId, id, rows => {
+        delete this.failed[id];
         this.live[id] = rows;
         this.renderCount(id);
+        renderLiveBoard(id);
         if (this.autoSettle[id]) {
           collectQuizResults(id, { silent: true }).then(() => renderQuizList());
         }
+      }, err => {
+        // 讀不到就讓老師看得見,不要只留一句「連線中…」在畫面上
+        this.failed[id] = err.code === 'permission-denied'
+          ? '讀不到作答,請確認 Firestore 安全性規則已更新'
+          : '連線中斷:' + err.message;
+        this.renderCount(id);
+        renderLiveBoard(id);
       });
     });
   },
@@ -565,6 +575,7 @@ const QuizWatch = {
       delete this.unsubs[quizId];
     }
     delete this.live[quizId];
+    delete this.failed[quizId];
   },
 
   stopAll() {
@@ -577,6 +588,15 @@ const QuizWatch = {
   renderCount(quizId) {
     const el = document.getElementById('liveCount_' + quizId);
     if (!el) return;
+
+    if (this.failed[quizId]) {
+      el.textContent = '⚠ ' + this.failed[quizId];
+      el.classList.remove('has-submissions');
+      el.classList.add('is-error');
+      return;
+    }
+    el.classList.remove('is-error');
+
     const rows = this.live[quizId] || [];
     const quiz = getQuiz(quizId);
     let n, label;
@@ -688,7 +708,7 @@ function renderQuizList() {
             ? `<button class="btn btn-accent btn-small" onclick="publishQuiz('${quiz.id}')">開放作答</button>`
             : ''}
           ${quiz.status === 'open'
-            ? `<span id="liveCount_${quiz.id}" class="quiz-live-count">連線中…</span>
+            ? `<span id="liveCount_${quiz.id}" class="quiz-live-count">讀取作答中…</span>
                ${waiting
                  ? `<button class="btn btn-ghost btn-small"
                       onclick="settleNow('${quiz.id}')"
@@ -708,13 +728,17 @@ function renderQuizList() {
         </div>
       </div>
 
+      ${quiz.status === 'open' ? `<div id="liveBoard_${quiz.id}" class="quiz-live-board"></div>` : ''}
       ${quiz.status === 'draft' ? renderQuizEditor(quiz) : renderQuizResults(quiz)}
     </div>`;
   }).join('');
 
   // 列表重繪後,訂閱狀態與畫面上的即時人數要跟著對齊
   QuizWatch.sync();
-  Object.keys(QuizWatch.live).forEach(id => QuizWatch.renderCount(id));
+  Object.keys(QuizWatch.live).forEach(id => {
+    QuizWatch.renderCount(id);
+    renderLiveBoard(id);
+  });
 }
 
 function renderQuizEditor(quiz) {
@@ -782,6 +806,75 @@ function renderQuizEditor(quiz) {
               onclick="importQuizQuestionsFromExcel('${quiz.id}')">📊 從 Excel 匯入題目</button>
     </div>
   </div>`;
+}
+
+/* ============================================
+   即時作答概況
+   ────────────────────────────────────────────
+   老師在台上最想知道的是「誰還沒好」,所以主角是學生名單,
+   不是統計數字。只更新這一塊,老師在別處打字不會被打斷。
+============================================ */
+function renderLiveBoard(quizId) {
+  const el = document.getElementById('liveBoard_' + quizId);
+  if (!el) return;
+
+  const quiz = getQuiz(quizId);
+  if (!quiz) return;
+
+  if (QuizWatch.failed[quizId]) {
+    el.innerHTML = `<div class="live-empty">⚠ ${escapeHtml(QuizWatch.failed[quizId])}</div>`;
+    return;
+  }
+
+  const rows = QuizWatch.live[quizId] || [];
+  const race = quiz.scoreMode === 'perQuestion';
+  const total = quiz.questions.length;
+
+  // 每位學生的進度:逐題搶答算答過幾題,一般測驗就是交卷了沒
+  const done = {};
+  rows.forEach(r => {
+    if (race) done[r.studentId] = (done[r.studentId] || 0) + 1;
+    else done[r.studentId] = total;
+  });
+
+  const students = [...state.students].sort(bySeatNumber);
+  const finished = students.filter(s => (done[s.id] || 0) >= total).length;
+  const working = students.filter(s => done[s.id] > 0 && done[s.id] < total).length;
+  const notYet = students.length - finished - working;
+
+  const chips = students.map(s => {
+    const n = done[s.id] || 0;
+    const cls = n >= total ? 'is-done' : n > 0 ? 'is-working' : 'is-waiting';
+    const num = s.seatNumber ? `<span class="seat-no">${escapeHtml(String(s.seatNumber))}</span>` : '';
+    const prog = race && n > 0 && n < total ? `<span class="live-chip-prog">${n}/${total}</span>` : '';
+    return `<span class="live-chip ${cls}">${num}${escapeHtml(s.name)}${prog}</span>`;
+  }).join('');
+
+  // 逐題搶答另外看每一題有幾個人答過,老師才知道卡在哪一題
+  let perQ = '';
+  if (race && rows.length > 0) {
+    const count = {};
+    rows.forEach(r => { count[r.questionId] = (count[r.questionId] || 0) + 1; });
+    perQ = `<div class="live-perq">` + quiz.questions.map((q, i) => {
+      const n = count[q.id] || 0;
+      const pct = students.length ? Math.round(n / students.length * 100) : 0;
+      return `<div class="live-perq-row" title="${escapeHtml(q.text)}">
+                <span class="live-perq-no">第 ${i + 1} 題</span>
+                <span class="live-perq-bar"><i style="width:${pct}%"></i></span>
+                <span class="live-perq-n">${n}</span>
+              </div>`;
+    }).join('') + `</div>`;
+  }
+
+  el.innerHTML = `
+    <div class="live-head">
+      <span class="live-stat is-done">${race ? '已答完' : '已交卷'} ${finished}</span>
+      ${race ? `<span class="live-stat is-working">作答中 ${working}</span>` : ''}
+      <span class="live-stat is-waiting">${race ? '還沒開始' : '未交卷'} ${notYet}</span>
+      <span class="live-total">共 ${students.length} 人</span>
+    </div>
+    <div class="live-chips">${chips}</div>
+    ${perQ}`;
 }
 
 function renderQuizResults(quiz) {
