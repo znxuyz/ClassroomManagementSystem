@@ -20,7 +20,9 @@ const QUESTION_TYPES = {
    兩邊才不會有一邊支援結算時間、另一邊沒有的落差。 */
 function readQuizForm() {
   const date = document.getElementById('quizSettleDate').value;
-  const time = document.getElementById('quizSettleTime').value || '00:00';
+  const hh = document.getElementById('quizSettleHour').value || '00';
+  const mm = document.getElementById('quizSettleMin').value || '00';
+  const time = `${hh}:${mm}`;
   return {
     title: document.getElementById('quizTitle').value.trim(),
     dueDate: document.getElementById('quizDueDate').value || '',
@@ -34,29 +36,35 @@ function readQuizForm() {
   };
 }
 
-/* 結算時間的選項。每半小時一格,24 小時制 ——
-   原本用 datetime-local,但它的上午/下午由瀏覽器語系決定、改不掉,
+/* 小時與分鐘分開選,24 小時制。
+   原本用 datetime-local,但它的上午/下午是瀏覽器介面語系決定的、改不掉,
    「下午 12:00」是中午還是半夜很容易看錯。 */
 function fillSettleTimeOptions() {
-  const sel = document.getElementById('quizSettleTime');
-  if (!sel || sel.options.length) return;
+  const hour = document.getElementById('quizSettleHour');
+  const min = document.getElementById('quizSettleMin');
+  if (!hour || !min || hour.options.length) return;
+
   const p = n => String(n).padStart(2, '0');
-  let html = '';
-  for (let h = 0; h < 24; h++) {
-    for (const m of ['00', '30']) {
-      const v = `${p(h)}:${m}`;
-      const note = v === '00:00' ? '(半夜)' : v === '12:00' ? '(中午)' : '';
-      html += `<option value="${v}">${v} ${note}</option>`;
-    }
+
+  let h = '';
+  for (let i = 0; i < 24; i++) {
+    // 最容易看錯的那兩個直接寫出來
+    const note = i === 0 ? ' 半夜' : i === 12 ? ' 中午' : '';
+    h += `<option value="${p(i)}">${p(i)}${note}</option>`;
   }
-  sel.innerHTML = html;
+  hour.innerHTML = h;
+
+  let m = '';
+  for (let i = 0; i < 60; i++) m += `<option value="${p(i)}">${p(i)}</option>`;
+  min.innerHTML = m;
 }
 
 function clearQuizForm() {
   document.getElementById('quizTitle').value = '';
   document.getElementById('quizDueDate').value = '';
   document.getElementById('quizSettleDate').value = '';
-  document.getElementById('quizSettleTime').value = '00:00';
+  document.getElementById('quizSettleHour').value = '00';
+  document.getElementById('quizSettleMin').value = '00';
 }
 
 function newQuiz(form, questions) {
@@ -132,7 +140,8 @@ function setSettleTonight() {
   const p = n => String(n).padStart(2, '0');
   document.getElementById('quizSettleDate').value =
     `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-  document.getElementById('quizSettleTime').value = '00:00';
+  document.getElementById('quizSettleHour').value = '00';
+  document.getElementById('quizSettleMin').value = '00';
 }
 
 /* 選了「只有前幾名得分」才需要填名額 */

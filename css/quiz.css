@@ -261,3 +261,22 @@
   padding-top: 10px;
   border-top: 1px solid var(--paper-warm);
 }
+
+/* 小時 : 分鐘。兩個下拉貼在一起,中間一個冒號,看起來像一組而不是兩個欄位 */
+.time-pick {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.time-pick select { font-variant-numeric: tabular-nums; }
+
+/* 小時那格要放得下「00 半夜」,窄了會被切成「00 半」 */
+#quizSettleHour { width: 108px; }
+#quizSettleMin  { width: 76px; }
+
+.time-pick-sep {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink-muted);
+}
