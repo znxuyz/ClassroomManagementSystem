@@ -36,6 +36,16 @@
   --font-display: 'Noto Serif TC', serif;
   --font-body:    'Noto Sans TC', sans-serif;
 
+  /* 控制項尺寸 ——
+     輸入框、下拉、按鈕全部用這組高度,同一排才不會高高低低。
+     日期欄與下拉的「天然高度」比文字框高幾 px,所以一律寫死 height。 */
+  --control-h:    38px;   /* 一般:輸入框、下拉、按鈕 */
+  --control-h-sm: 30px;   /* 小一號:btn-small、表格裡的小控制項 */
+  --control-h-lg: 48px;   /* 大一號:btn-large、設定畫面的輸入框 */
+  --control-px:   12px;   /* 左右內距 */
+  --control-r:    8px;    /* 圓角 */
+  --control-fs:   14px;   /* 字級 */
+
   /* 陰影與動態 */
   --shadow-sm: 0 1px 3px rgba(42, 39, 35, 0.08);
   --shadow-md: 0 3px 10px rgba(42, 39, 35, 0.12);
@@ -279,7 +289,7 @@ body {
   width: 100%;
   padding: 12px 16px;
   border: 1.5px solid var(--paper-shadow);
-  border-radius: 6px;
+  border-radius: var(--control-r);
   font-family: var(--font-body);
   font-size: 15px;
   background: var(--paper);
@@ -293,7 +303,14 @@ body {
   box-shadow: 0 0 0 3px rgba(45, 95, 71, 0.1);
 }
 
+/* 設定畫面的輸入框與下拉用同一個高度 —— 下拉的天然高度比輸入框高 2px */
+.setup-input,
+select.setup-input {
+  height: var(--control-h-lg);
+}
+
 .setup-textarea {
+  height: auto;
   min-height: 140px;
   resize: vertical;
   line-height: 1.7;

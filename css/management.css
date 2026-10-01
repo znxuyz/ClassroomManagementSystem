@@ -19,13 +19,9 @@
 }
 
 .seating-size-input {
-  width: 60px;
-  padding: 6px 10px;
-  border: 1px solid var(--paper-shadow);
-  border-radius: 4px;
+  width: 64px;
   text-align: center;
   background: var(--paper);
-  font-size: 14px;
 }
 
 .seating-layout-wrapper {

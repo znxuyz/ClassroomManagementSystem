@@ -397,14 +397,10 @@
   border-top: 1px dashed var(--paper-shadow);
 }
 
+/* 尺寸走共用的控制項規則(components.css),這裡只留版面上的差異 */
 .custom-points-input {
   flex: 1;
-  padding: 10px 14px;
-  border: 1.5px solid var(--paper-shadow);
-  border-radius: 6px;
-  font-size: 14px;
   background: var(--paper);
-  color: var(--ink);
 }
 
 .custom-points-input:focus {

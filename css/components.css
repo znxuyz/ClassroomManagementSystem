@@ -6,11 +6,12 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 22px;
+  height: var(--control-h);
+  padding: 0 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--control-r);
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: var(--control-fs);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s var(--ease-out);
@@ -58,14 +59,19 @@
 }
 
 .btn-large {
-  padding: 14px 32px;
+  height: var(--control-h-lg);
+  padding: 0 32px;
   font-size: 15px;
 }
 
 .btn-small {
-  padding: 6px 12px;
+  height: var(--control-h-sm);
+  padding: 0 12px;
   font-size: 12px;
 }
+
+/* 高度寫死之後,放在 flex 列裡不會再被拉長或壓扁 */
+.btn { flex-shrink: 0; }
 
 /* ============================================
    寵物選擇對話框
@@ -201,13 +207,30 @@
   border: 1px solid var(--paper-shadow);
 }
 
-.rule-editor-input {
-  padding: 8px 12px;
+/* 表單控制項的統一外觀。
+   input / select / 日期欄的天然高度各不相同(日期欄最高、下拉次之),
+   所以一律寫死 height,同一排才會切齊。 */
+.rule-editor-input,
+.custom-points-input,
+.toolbar-search,
+.seating-size-input {
+  height: var(--control-h);
+  padding: 0 var(--control-px);
   border: 1px solid var(--paper-shadow);
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--control-r);
+  font-size: var(--control-fs);
   font-family: var(--font-body);
   background: var(--paper-warm);
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+/* textarea 的高度本來就該由內容決定,不要被上面那條綁死 */
+textarea.rule-editor-input,
+textarea.custom-points-input {
+  height: auto;
+  padding: 8px var(--control-px);
+  line-height: 1.6;
 }
 
 .rule-editor-input:focus {
@@ -216,17 +239,18 @@
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--control-r);
   border: none;
   background: var(--paper-warm);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   color: var(--ink-muted);
+  flex-shrink: 0;
   transition: all 0.2s var(--ease-out);
 }
 
@@ -286,14 +310,7 @@
   border-radius: 6px;
 }
 
-.toolbar-search {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--paper-shadow);
-  border-radius: 4px;
-  font-size: 13px;
-  background: var(--paper-warm);
-}
+.toolbar-search { flex: 1; }
 
 /* ============================================
    子分頁(課堂工具 / 班級管理 共用)
@@ -318,8 +335,9 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: var(--control-r);
   transition: all 0.2s var(--ease-out);
+  height: var(--control-h);
 }
 
 .sub-tab:hover {
