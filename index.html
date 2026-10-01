@@ -9,25 +9,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
 <!-- 樣式表 -->
-<link rel="stylesheet" href="css/base.css?v=20260930a">
-<link rel="stylesheet" href="css/components.css?v=20260930a">
-<link rel="stylesheet" href="css/dashboard.css?v=20260930a">
-<link rel="stylesheet" href="css/tools.css?v=20260930a">
-<link rel="stylesheet" href="css/management.css?v=20260930a">
-<link rel="stylesheet" href="css/contact.css?v=20260930a">
-<link rel="stylesheet" href="css/shop.css?v=20260930a">
-<link rel="stylesheet" href="css/ai.css?v=20260930a">
-<link rel="stylesheet" href="css/report.css?v=20260930a">
-<link rel="stylesheet" href="css/projector.css?v=20260930a">
-<link rel="stylesheet" href="css/settings.css?v=20260930a">
-<link rel="stylesheet" href="css/auth.css?v=20260930a">
-<link rel="stylesheet" href="css/quiz.css?v=20260930a">
-<link rel="stylesheet" href="css/student.css?v=20260930a">
-<link rel="stylesheet" href="css/pet-picker.css?v=20260930a">
-<link rel="stylesheet" href="css/leaderboard.css?v=20260930a">
-<link rel="stylesheet" href="css/territory.css?v=20260930a">
+<link rel="stylesheet" href="css/base.css?v=20261001a">
+<link rel="stylesheet" href="css/components.css?v=20261001a">
+<link rel="stylesheet" href="css/dashboard.css?v=20261001a">
+<link rel="stylesheet" href="css/tools.css?v=20261001a">
+<link rel="stylesheet" href="css/management.css?v=20261001a">
+<link rel="stylesheet" href="css/contact.css?v=20261001a">
+<link rel="stylesheet" href="css/shop.css?v=20261001a">
+<link rel="stylesheet" href="css/ai.css?v=20261001a">
+<link rel="stylesheet" href="css/report.css?v=20261001a">
+<link rel="stylesheet" href="css/projector.css?v=20261001a">
+<link rel="stylesheet" href="css/settings.css?v=20261001a">
+<link rel="stylesheet" href="css/auth.css?v=20261001a">
+<link rel="stylesheet" href="css/quiz.css?v=20261001a">
+<link rel="stylesheet" href="css/student.css?v=20261001a">
+<link rel="stylesheet" href="css/pet-picker.css?v=20261001a">
+<link rel="stylesheet" href="css/leaderboard.css?v=20261001a">
+<link rel="stylesheet" href="css/territory.css?v=20261001a">
 <!-- 主題:掛在 <html data-theme> 上,一定要放最後才蓋得過前面的規則 -->
-<link rel="stylesheet" href="css/theme-aurora.css?v=20260930a">
+<link rel="stylesheet" href="css/theme-aurora.css?v=20261001a">
 <script>
   // 在 CSS 之後、畫面之前就決定主題,避免載入瞬間閃一下舊配色
   document.documentElement.dataset.theme =
@@ -405,13 +405,19 @@
           <input type="number" id="quizTopN" class="rule-editor-input" value="5" min="1" max="40"
                  style="width:90px;" />
         </label>
+        <!-- 刻意不用 datetime-local:它的上午/下午是瀏覽器語系決定的,改不掉,
+             「下午 12:00」到底是中午還是半夜很容易看錯。日期 + 24 小時下拉最清楚。 -->
         <label class="quiz-field"
                title="統一結算時間:時間到之前不批改、不發分,學生只看得到已交卷">
-          <span class="quiz-field-label">統一結算時間(可留空)</span>
-          <input type="datetime-local" id="quizSettleAt" class="rule-editor-input" />
+          <span class="quiz-field-label">統一結算日期(可留空)</span>
+          <input type="date" id="quizSettleDate" class="rule-editor-input" />
+        </label>
+        <label class="quiz-field" title="24 小時制">
+          <span class="quiz-field-label">結算時間</span>
+          <select id="quizSettleTime" class="rule-editor-input" style="width:104px;"></select>
         </label>
         <button class="btn btn-ghost btn-small" onclick="setSettleTonight()"
-                title="填入今晚 12 點">今晚 12 點</button>
+                title="填入明天 00:00">今晚 12 點(00:00)</button>
         <button class="btn btn-primary btn-small" onclick="createQuiz()">＋ 建立測驗</button>
         <button class="btn btn-accent btn-small" onclick="createQuizFromExcel()"
                 title="選一個 Excel,直接建立整份測驗">📊 從 Excel 建立</button>
@@ -421,7 +427,8 @@
       <div class="quiz-create-hint">
         <strong>從 Excel 建立</strong>:上方設定好之後選一個題庫檔,整份測驗連同題目一次建好;
         測驗名稱留空就用檔名。不確定格式就先按「範本」下載一份。<br>
-        留空「統一結算時間」= 老師自己按收回成績。
+        留空「統一結算日期」= 老師自己按收回成績。時間一律 <strong>24 小時制</strong>,
+        00:00 是半夜、12:00 是中午。
         填了時間 = 時間到之前只記錄交卷順序,到點後老師一開系統就一次算完並公布成績。
         搶答建議填,名次一次算完最穩。
       </div>
@@ -980,40 +987,40 @@
 
 
 <!-- 應用程式邏輯(載入順序很重要) -->
-<script src="js/00-firebase.js?v=20260930a"></script>
-<script src="js/00b-session.js?v=20260930a"></script>
-<script src="js/00c-auth-ui.js?v=20260930a"></script>
-<script src="js/01-constants.js?v=20260930a"></script>
-<script src="js/02-state.js?v=20260930a"></script>
-<script src="js/03-storage.js?v=20260930a"></script>
-<script src="js/04-utils.js?v=20260930a"></script>
-<script src="js/05-pet-engine.js?v=20260930a"></script>
-<script src="js/06-ai.js?v=20260930a"></script>
-<script src="js/07-excel.js?v=20260930a"></script>
-<script src="js/10-nav.js?v=20260930a"></script>
-<script src="js/feature-setup.js?v=20260930a"></script>
-<script src="js/feature-students.js?v=20260930a"></script>
-<script src="js/feature-dashboard.js?v=20260930a"></script>
-<script src="js/feature-attendance.js?v=20260930a"></script>
-<script src="js/feature-picker.js?v=20260930a"></script>
-<script src="js/feature-timer.js?v=20260930a"></script>
-<script src="js/feature-seating.js?v=20260930a"></script>
-<script src="js/feature-grouping.js?v=20260930a"></script>
-<script src="js/feature-quiz.js?v=20260930a"></script>
-<script src="js/feature-territory.js?v=20260930a"></script>
-<script src="js/feature-leaderboard.js?v=20260930a"></script>
-<script src="js/feature-student-view.js?v=20260930a"></script>
-<script src="js/feature-contact-book.js?v=20260930a"></script>
-<script src="js/feature-homework.js?v=20260930a"></script>
-<script src="js/feature-shop.js?v=20260930a"></script>
-<script src="js/feature-class-tasks.js?v=20260930a"></script>
-<script src="js/feature-ai-features.js?v=20260930a"></script>
-<script src="js/feature-projector.js?v=20260930a"></script>
-<script src="js/feature-overview.js?v=20260930a"></script>
-<script src="js/feature-report.js?v=20260930a"></script>
-<script src="js/feature-rules.js?v=20260930a"></script>
-<script src="js/feature-settings.js?v=20260930a"></script>
-<script src="js/99-app.js?v=20260930a"></script>
+<script src="js/00-firebase.js?v=20261001a"></script>
+<script src="js/00b-session.js?v=20261001a"></script>
+<script src="js/00c-auth-ui.js?v=20261001a"></script>
+<script src="js/01-constants.js?v=20261001a"></script>
+<script src="js/02-state.js?v=20261001a"></script>
+<script src="js/03-storage.js?v=20261001a"></script>
+<script src="js/04-utils.js?v=20261001a"></script>
+<script src="js/05-pet-engine.js?v=20261001a"></script>
+<script src="js/06-ai.js?v=20261001a"></script>
+<script src="js/07-excel.js?v=20261001a"></script>
+<script src="js/10-nav.js?v=20261001a"></script>
+<script src="js/feature-setup.js?v=20261001a"></script>
+<script src="js/feature-students.js?v=20261001a"></script>
+<script src="js/feature-dashboard.js?v=20261001a"></script>
+<script src="js/feature-attendance.js?v=20261001a"></script>
+<script src="js/feature-picker.js?v=20261001a"></script>
+<script src="js/feature-timer.js?v=20261001a"></script>
+<script src="js/feature-seating.js?v=20261001a"></script>
+<script src="js/feature-grouping.js?v=20261001a"></script>
+<script src="js/feature-quiz.js?v=20261001a"></script>
+<script src="js/feature-territory.js?v=20261001a"></script>
+<script src="js/feature-leaderboard.js?v=20261001a"></script>
+<script src="js/feature-student-view.js?v=20261001a"></script>
+<script src="js/feature-contact-book.js?v=20261001a"></script>
+<script src="js/feature-homework.js?v=20261001a"></script>
+<script src="js/feature-shop.js?v=20261001a"></script>
+<script src="js/feature-class-tasks.js?v=20261001a"></script>
+<script src="js/feature-ai-features.js?v=20261001a"></script>
+<script src="js/feature-projector.js?v=20261001a"></script>
+<script src="js/feature-overview.js?v=20261001a"></script>
+<script src="js/feature-report.js?v=20261001a"></script>
+<script src="js/feature-rules.js?v=20261001a"></script>
+<script src="js/feature-settings.js?v=20261001a"></script>
+<script src="js/99-app.js?v=20261001a"></script>
 
 </body>
 </html>

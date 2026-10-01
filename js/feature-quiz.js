@@ -19,7 +19,8 @@ const QUESTION_TYPES = {
 /* 讀取建立表單的設定。手動建立與 Excel 匯入共用同一組設定,
    兩邊才不會有一邊支援結算時間、另一邊沒有的落差。 */
 function readQuizForm() {
-  const settleRaw = document.getElementById('quizSettleAt').value;
+  const date = document.getElementById('quizSettleDate').value;
+  const time = document.getElementById('quizSettleTime').value || '00:00';
   return {
     title: document.getElementById('quizTitle').value.trim(),
     dueDate: document.getElementById('quizDueDate').value || '',
@@ -28,14 +29,34 @@ function readQuizForm() {
     topN: parseInt(document.getElementById('quizTopN').value) || 5,
     // 統一結算時間。設了之後,時間到之前一律不批改也不發分,
     // 學生只會看到「已交卷」。時間到、老師一開系統就自動算完。
-    settleAt: settleRaw ? new Date(settleRaw).getTime() : 0
+    // 不帶 Z,所以是以老師電腦的當地時間解讀 —— 填 00:00 就是半夜十二點。
+    settleAt: date ? new Date(`${date}T${time}`).getTime() : 0
   };
+}
+
+/* 結算時間的選項。每半小時一格,24 小時制 ——
+   原本用 datetime-local,但它的上午/下午由瀏覽器語系決定、改不掉,
+   「下午 12:00」是中午還是半夜很容易看錯。 */
+function fillSettleTimeOptions() {
+  const sel = document.getElementById('quizSettleTime');
+  if (!sel || sel.options.length) return;
+  const p = n => String(n).padStart(2, '0');
+  let html = '';
+  for (let h = 0; h < 24; h++) {
+    for (const m of ['00', '30']) {
+      const v = `${p(h)}:${m}`;
+      const note = v === '00:00' ? '(半夜)' : v === '12:00' ? '(中午)' : '';
+      html += `<option value="${v}">${v} ${note}</option>`;
+    }
+  }
+  sel.innerHTML = html;
 }
 
 function clearQuizForm() {
   document.getElementById('quizTitle').value = '';
   document.getElementById('quizDueDate').value = '';
-  document.getElementById('quizSettleAt').value = '';
+  document.getElementById('quizSettleDate').value = '';
+  document.getElementById('quizSettleTime').value = '00:00';
 }
 
 function newQuiz(form, questions) {
@@ -104,14 +125,14 @@ function createQuizFromExcel() {
   });
 }
 
-/* 今晚 12 點 = 明天 00:00 */
+/* 今晚 12 點 = 明天 00:00(不是今天中午) */
 function setSettleTonight() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
-  d.setHours(0, 0, 0, 0);
   const p = n => String(n).padStart(2, '0');
-  document.getElementById('quizSettleAt').value =
-    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T00:00`;
+  document.getElementById('quizSettleDate').value =
+    `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  document.getElementById('quizSettleTime').value = '00:00';
 }
 
 /* 選了「只有前幾名得分」才需要填名額 */
@@ -618,6 +639,7 @@ function gradeSubmission(quiz, answers) {
 ============================================ */
 
 function renderQuizList() {
+  fillSettleTimeOptions();        // 第一次進來才會真的填,之後是空操作
   const el = document.getElementById('quizList');
   if (!el) return;
 
