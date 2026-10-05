@@ -145,6 +145,57 @@ const Cloud = {
     await this.db.collection('classes').doc(classId).update(payload);
   },
 
+  /* ---------- 每日備份 ----------
+     班級資料是一份文件、存檔是整份覆蓋,所以只要有一次寫壞就沒了。
+     每天第一次開班時留一份當天的快照 —— 刻意「只在不存在時才寫」:
+     如果今天已經弄壞了又重開班,不能讓壞掉的狀態蓋掉今天的備份。 */
+  async saveDailyBackup(classId, blob) {
+    const day = new Date();
+    const id = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const ref = this.db.collection('classes').doc(classId).collection('backups').doc(id);
+
+    const snap = await ref.get();
+    if (snap.exists) return false;
+
+    await ref.set({
+      blob,
+      at: Date.now(),
+      studentCount: (blob && blob.students || []).length
+    });
+    return true;
+  },
+
+  /* 指定 id 的備份。還原前先存一份現況用的,id 不能和每日快照撞在一起。 */
+  async saveBackup(classId, backupId, blob) {
+    await this.db.collection('classes').doc(classId)
+      .collection('backups').doc(backupId)
+      .set({ blob, at: Date.now(), studentCount: (blob && blob.students || []).length });
+  },
+
+  async listBackups(classId, limit = 20) {
+    const snap = await this.db.collection('classes').doc(classId)
+      .collection('backups').orderBy('at', 'desc').limit(limit).get();
+    return snap.docs.map(d => ({ id: d.id, at: d.data().at, studentCount: d.data().studentCount || 0 }));
+  },
+
+  async loadBackup(classId, backupId) {
+    const snap = await this.db.collection('classes').doc(classId)
+      .collection('backups').doc(backupId).get();
+    return snap.exists ? snap.data().blob : null;
+  },
+
+  /* 只留最近幾份,免得一學年累積出幾百份 */
+  async pruneBackups(classId, keep = 30) {
+    const snap = await this.db.collection('classes').doc(classId)
+      .collection('backups').orderBy('at', 'desc').get();
+    const old = snap.docs.slice(keep);
+    if (old.length === 0) return 0;
+    const batch = this.db.batch();
+    old.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    return old.length;
+  },
+
   /* 刪除班級。必須連同名冊索引一起清掉,否則學生登入時
      還會看到已經不存在的班級。 */
   async deleteClass(classId) {

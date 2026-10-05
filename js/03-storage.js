@@ -63,8 +63,26 @@ function decodeGroups(list) {
   return (list || []).map(g => Array.isArray(g) ? g : (g.members || []));
 }
 
+/* 存檔格式的版本。
+   欄位有增減時就 +1 —— 下面的「比雲端舊就不准寫」靠它判斷。 */
+const BLOB_SCHEMA = 1;
+
+/* serializeState() 認得的欄位。
+   不在這份清單裡、但雲端上有的東西會被原封不動帶回去(見 _carryOver)。 */
+const KNOWN_BLOB_KEYS = [
+  'schema', 'className', 'teacherName', 'students', 'rules', 'attendance',
+  'seatingLayouts', 'groupSets', 'currentGroups', 'contactBook', 'homework',
+  'classTasks', 'shopHistory', 'shopItems', 'territoryQuestions', 'quizzes'
+];
+
 function serializeState() {
   return {
+    /* 先鋪上「這個版本不認得的欄位」。
+       存檔是整份覆蓋 blob,如果只寫自己認得的欄位,那麼一個還沒更新的
+       分頁(瀏覽器快取舊的 JS)存一次,新版本才有的資料就永遠消失了。
+       原封不動帶回去,舊版本就不會傷到新版本的資料。 */
+    ...(state._carryOver || {}),
+    schema: BLOB_SCHEMA,
     className: state.className,
     teacherName: state.teacherName,
     students: state.students,
@@ -181,6 +199,15 @@ function diagnoseSaveFailure(data) {
 
 let _cloudSaveTimer = null;
 let _cloudSavePending = false;
+let _staleWarned = false;
+
+/* 只吵一次,但吵得夠清楚 —— 這種狀況老師不重新整理就會一直存不了 */
+function warnStaleVersion() {
+  if (_staleWarned) return;
+  _staleWarned = true;
+  updateSyncStatus('error');
+  toast('這個分頁的版本比雲端舊,已暫停儲存以免蓋掉資料。請重新整理頁面(Ctrl+F5)');
+}
 
 function save() {
   const data = serializeState();
@@ -189,6 +216,13 @@ function save() {
   Storage.save(data, state.classId);
 
   if (!isCloudMode()) return;
+
+  /* 這個分頁比雲端舊,寫上去會把新版本的資料弄壞。
+     寧可不存也不要存錯 —— 存錯是救不回來的,不存至少資料還在雲端。 */
+  if (state._blobNewer) {
+    warnStaleVersion();
+    return;
+  }
 
   _cloudSavePending = true;
   updateSyncStatus('saving');
@@ -199,6 +233,7 @@ function save() {
 
 async function flushCloudSave(isRetry) {
   if (!isCloudMode() || !_cloudSavePending) return;
+  if (state._blobNewer) { _cloudSavePending = false; return; }
   const classId = state.classId;
   const data = serializeState();
   try {

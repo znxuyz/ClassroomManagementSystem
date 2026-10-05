@@ -9,26 +9,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
 <!-- 樣式表 -->
-<link rel="stylesheet" href="css/base.css?v=20261005c">
-<link rel="stylesheet" href="css/components.css?v=20261005c">
-<link rel="stylesheet" href="css/dashboard.css?v=20261005c">
-<link rel="stylesheet" href="css/tools.css?v=20261005c">
-<link rel="stylesheet" href="css/management.css?v=20261005c">
-<link rel="stylesheet" href="css/contact.css?v=20261005c">
-<link rel="stylesheet" href="css/shop.css?v=20261005c">
-<link rel="stylesheet" href="css/ai.css?v=20261005c">
-<link rel="stylesheet" href="css/report.css?v=20261005c">
-<link rel="stylesheet" href="css/projector.css?v=20261005c">
-<link rel="stylesheet" href="css/settings.css?v=20261005c">
-<link rel="stylesheet" href="css/auth.css?v=20261005c">
-<link rel="stylesheet" href="css/quiz.css?v=20261005c">
-<link rel="stylesheet" href="css/student.css?v=20261005c">
-<link rel="stylesheet" href="css/pet-picker.css?v=20261005c">
-<link rel="stylesheet" href="css/leaderboard.css?v=20261005c">
-<link rel="stylesheet" href="css/territory.css?v=20261005c">
-<link rel="stylesheet" href="css/switch-hud.css?v=20261005c">
+<link rel="stylesheet" href="css/base.css?v=20261005d">
+<link rel="stylesheet" href="css/components.css?v=20261005d">
+<link rel="stylesheet" href="css/dashboard.css?v=20261005d">
+<link rel="stylesheet" href="css/tools.css?v=20261005d">
+<link rel="stylesheet" href="css/management.css?v=20261005d">
+<link rel="stylesheet" href="css/contact.css?v=20261005d">
+<link rel="stylesheet" href="css/shop.css?v=20261005d">
+<link rel="stylesheet" href="css/ai.css?v=20261005d">
+<link rel="stylesheet" href="css/report.css?v=20261005d">
+<link rel="stylesheet" href="css/projector.css?v=20261005d">
+<link rel="stylesheet" href="css/settings.css?v=20261005d">
+<link rel="stylesheet" href="css/auth.css?v=20261005d">
+<link rel="stylesheet" href="css/quiz.css?v=20261005d">
+<link rel="stylesheet" href="css/student.css?v=20261005d">
+<link rel="stylesheet" href="css/pet-picker.css?v=20261005d">
+<link rel="stylesheet" href="css/leaderboard.css?v=20261005d">
+<link rel="stylesheet" href="css/territory.css?v=20261005d">
+<link rel="stylesheet" href="css/switch-hud.css?v=20261005d">
 <!-- 主題:掛在 <html data-theme> 上,一定要放最後才蓋得過前面的規則 -->
-<link rel="stylesheet" href="css/theme-aurora.css?v=20261005c">
+<link rel="stylesheet" href="css/theme-aurora.css?v=20261005d">
 <script>
   // 在 CSS 之後、畫面之前就決定主題,避免載入瞬間閃一下舊配色
   document.documentElement.dataset.theme =
@@ -902,6 +902,21 @@
       </div>
       
       <div class="panel-card" style="margin-top: 16px;">
+        <div class="panel-title">資料備份</div>
+        <div class="text-muted" style="font-size: 12px; line-height: 1.9; margin-bottom: 12px;">
+          ✦ 每天第一次開啟這個班級時,系統會自動留一份當天的快照(保留最近 30 份)。<br>
+          ✦ 學生的交卷、逐題作答、領地戰紀錄是各自獨立存放的,不在這份快照裡,
+            也不會被任何更新覆蓋。<br>
+          ✦ 還原會把班級資料整個換成那一天的樣子,請先確認再按。
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+          <button class="btn btn-primary btn-small" onclick="renderBackupList()">查看備份</button>
+          <button class="btn btn-ghost btn-small" onclick="exportClassBackup()">⤓ 下載完整備份</button>
+        </div>
+        <div id="backupList"></div>
+      </div>
+
+      <div class="panel-card" style="margin-top: 16px;">
         <div class="panel-title">外觀</div>
         <div class="theme-choices">
           <button class="theme-choice" data-theme-pick="aurora" onclick="setTheme('aurora')">
@@ -992,41 +1007,41 @@
 
 
 <!-- 應用程式邏輯(載入順序很重要) -->
-<script src="js/00-firebase.js?v=20261005c"></script>
-<script src="js/00b-session.js?v=20261005c"></script>
-<script src="js/00c-auth-ui.js?v=20261005c"></script>
-<script src="js/00d-switch-hud.js?v=20261005c"></script>
-<script src="js/01-constants.js?v=20261005c"></script>
-<script src="js/02-state.js?v=20261005c"></script>
-<script src="js/03-storage.js?v=20261005c"></script>
-<script src="js/04-utils.js?v=20261005c"></script>
-<script src="js/05-pet-engine.js?v=20261005c"></script>
-<script src="js/06-ai.js?v=20261005c"></script>
-<script src="js/07-excel.js?v=20261005c"></script>
-<script src="js/10-nav.js?v=20261005c"></script>
-<script src="js/feature-setup.js?v=20261005c"></script>
-<script src="js/feature-students.js?v=20261005c"></script>
-<script src="js/feature-dashboard.js?v=20261005c"></script>
-<script src="js/feature-attendance.js?v=20261005c"></script>
-<script src="js/feature-picker.js?v=20261005c"></script>
-<script src="js/feature-timer.js?v=20261005c"></script>
-<script src="js/feature-seating.js?v=20261005c"></script>
-<script src="js/feature-grouping.js?v=20261005c"></script>
-<script src="js/feature-quiz.js?v=20261005c"></script>
-<script src="js/feature-territory.js?v=20261005c"></script>
-<script src="js/feature-leaderboard.js?v=20261005c"></script>
-<script src="js/feature-student-view.js?v=20261005c"></script>
-<script src="js/feature-contact-book.js?v=20261005c"></script>
-<script src="js/feature-homework.js?v=20261005c"></script>
-<script src="js/feature-shop.js?v=20261005c"></script>
-<script src="js/feature-class-tasks.js?v=20261005c"></script>
-<script src="js/feature-ai-features.js?v=20261005c"></script>
-<script src="js/feature-projector.js?v=20261005c"></script>
-<script src="js/feature-overview.js?v=20261005c"></script>
-<script src="js/feature-report.js?v=20261005c"></script>
-<script src="js/feature-rules.js?v=20261005c"></script>
-<script src="js/feature-settings.js?v=20261005c"></script>
-<script src="js/99-app.js?v=20261005c"></script>
+<script src="js/00-firebase.js?v=20261005d"></script>
+<script src="js/00b-session.js?v=20261005d"></script>
+<script src="js/00c-auth-ui.js?v=20261005d"></script>
+<script src="js/00d-switch-hud.js?v=20261005d"></script>
+<script src="js/01-constants.js?v=20261005d"></script>
+<script src="js/02-state.js?v=20261005d"></script>
+<script src="js/03-storage.js?v=20261005d"></script>
+<script src="js/04-utils.js?v=20261005d"></script>
+<script src="js/05-pet-engine.js?v=20261005d"></script>
+<script src="js/06-ai.js?v=20261005d"></script>
+<script src="js/07-excel.js?v=20261005d"></script>
+<script src="js/10-nav.js?v=20261005d"></script>
+<script src="js/feature-setup.js?v=20261005d"></script>
+<script src="js/feature-students.js?v=20261005d"></script>
+<script src="js/feature-dashboard.js?v=20261005d"></script>
+<script src="js/feature-attendance.js?v=20261005d"></script>
+<script src="js/feature-picker.js?v=20261005d"></script>
+<script src="js/feature-timer.js?v=20261005d"></script>
+<script src="js/feature-seating.js?v=20261005d"></script>
+<script src="js/feature-grouping.js?v=20261005d"></script>
+<script src="js/feature-quiz.js?v=20261005d"></script>
+<script src="js/feature-territory.js?v=20261005d"></script>
+<script src="js/feature-leaderboard.js?v=20261005d"></script>
+<script src="js/feature-student-view.js?v=20261005d"></script>
+<script src="js/feature-contact-book.js?v=20261005d"></script>
+<script src="js/feature-homework.js?v=20261005d"></script>
+<script src="js/feature-shop.js?v=20261005d"></script>
+<script src="js/feature-class-tasks.js?v=20261005d"></script>
+<script src="js/feature-ai-features.js?v=20261005d"></script>
+<script src="js/feature-projector.js?v=20261005d"></script>
+<script src="js/feature-overview.js?v=20261005d"></script>
+<script src="js/feature-report.js?v=20261005d"></script>
+<script src="js/feature-rules.js?v=20261005d"></script>
+<script src="js/feature-settings.js?v=20261005d"></script>
+<script src="js/99-app.js?v=20261005d"></script>
 
 </body>
 </html>

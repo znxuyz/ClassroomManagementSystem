@@ -178,3 +178,102 @@ function renderThemeChoice() {
     btn.classList.toggle('active', btn.dataset.themePick === now);
   });
 }
+
+/* ============================================
+   資料備份與還原
+   ────────────────────────────────────────────
+   班級資料是一份文件、存檔是整份覆蓋,所以誤刪或貼錯名單都是一瞬間的事。
+   每日快照讓那件事變成可以還原的。
+============================================ */
+
+async function renderBackupList() {
+  const el = document.getElementById('backupList');
+  if (!el) return;
+
+  if (!isCloudMode()) {
+    el.innerHTML = '<div class="backup-empty">單機模式沒有雲端備份,請用「下載完整備份」留存。</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="backup-empty">讀取中…</div>';
+  let list;
+  try {
+    list = await Cloud.listBackups(state.classId);
+  } catch (e) {
+    console.error(e);
+    el.innerHTML = `<div class="backup-empty">讀取備份失敗:${escapeHtml(e.message)}</div>`;
+    return;
+  }
+
+  if (list.length === 0) {
+    el.innerHTML = '<div class="backup-empty">還沒有備份。明天開啟這個班級時就會留下第一份。</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(b => `
+    <div class="backup-row">
+      <span class="backup-date">${escapeHtml(b.id)}</span>
+      <span class="backup-meta">${b.studentCount} 位學生</span>
+      <button class="btn btn-ghost btn-small"
+              onclick="restoreBackup('${escapeHtml(b.id)}')">還原到這一天</button>
+    </div>`).join('');
+}
+
+async function restoreBackup(backupId) {
+  if (!confirm(
+    `要把「${state.className}」還原成 ${backupId} 的樣子嗎?\n\n` +
+    `學生名單、積分、點名、分組、聯絡簿、作業、商店、測驗題目都會回到那一天。\n` +
+    `那天之後的這些異動會消失。\n\n` +
+    `(學生的交卷、逐題作答、領地戰紀錄是分開存的,不受影響)`
+  )) return;
+  if (!confirm(`最後確認:真的要還原到 ${backupId} 嗎?`)) return;
+
+  try {
+    toast('還原中…');
+    const blob = await Cloud.loadBackup(state.classId, backupId);
+    if (!blob) { toast('找不到這份備份'); return; }
+
+    /* 還原前先把現況另存一份,按錯了還有退路。
+       不能用 saveDailyBackup —— 它「今天已經有就不寫」,
+       今天的快照通常早就存在了,等於這層保險不會生效。 */
+    const d = new Date();
+    const p2 = n => String(n).padStart(2, '0');
+    const stamp = `還原前-${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}-${p2(d.getHours())}${p2(d.getMinutes())}`;
+    await Cloud.saveBackup(state.classId, stamp, serializeState()).catch(() => {});
+
+    await Cloud.saveClassBlob(state.classId, blob, {
+      className: blob.className, teacherName: blob.teacherName
+    });
+    applyBlobToState(blob);
+    await Cloud.syncRosterIndex(state.classId, state.className, state.students)
+      .catch(e => console.warn('[備份] 名冊索引同步失敗:', e.message));
+
+    renderAll();
+    renderActiveView();
+    toast(`✦ 已還原到 ${backupId}`);
+  } catch (e) {
+    console.error(e);
+    toast('還原失敗:' + e.message);
+  }
+}
+
+/* 下載一份完整備份。老師手上有一份檔案,比什麼機制都可靠。 */
+function exportClassBackup() {
+  const data = {
+    匯出時間: new Date().toISOString(),
+    班級: state.className,
+    老師: state.teacherName,
+    說明: '這是班級資料的完整備份。學生的交卷與領地戰紀錄存在雲端的子集合,不在這個檔案裡。',
+    blob: serializeState()
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  a.href = url;
+  a.download = `${state.className || '班級'}_備份_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('備份已下載');
+}

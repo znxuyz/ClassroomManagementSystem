@@ -148,6 +148,11 @@ const Session = {
     showApp();
     renderActiveView();      // 換班後,目前停留的那一頁也要換成新班級的內容
 
+    // 每天第一次開這個班時留一份快照(不擋畫面)
+    Cloud.saveDailyBackup(classId, doc.blob || {})
+      .then(made => { if (made) Cloud.pruneBackups(classId).catch(() => {}); })
+      .catch(e => console.warn('[備份] 每日快照失敗:', e.message));
+
     // 收進學生自己挑好的守護獸。換班時等它跑完再收起提示,
     // 這樣提示消失的瞬間畫面就是最終狀態,不會又跳一下。
     const pending = applyPendingPetChoices();
@@ -239,6 +244,18 @@ function resetPerClassUiState() {
    把雲端 blob 套進 state,並補齊舊資料缺少的欄位
 ============================================ */
 function applyBlobToState(blob) {
+  /* 把這個版本不認得的欄位留著,存檔時原封不動寫回去。
+     沒有這一步,舊分頁存一次就會把新版本的資料整個抹掉。 */
+  state._carryOver = {};
+  Object.keys(blob || {}).forEach(k => {
+    if (!KNOWN_BLOB_KEYS.includes(k)) state._carryOver[k] = blob[k];
+  });
+
+  /* 雲端的格式比這個分頁新,代表這個分頁是舊的(通常是瀏覽器快取)。
+     讓它繼續寫會把新版本的資料寫壞,所以直接封鎖寫入並要求重新整理。 */
+  state._blobNewer = Number(blob && blob.schema || 0) > BLOB_SCHEMA;
+  if (state._blobNewer) warnStaleVersion();
+
   state.className     = blob.className || '';
   state.teacherName   = blob.teacherName || '';
   state.students      = blob.students || [];

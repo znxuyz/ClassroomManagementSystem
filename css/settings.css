@@ -109,3 +109,30 @@
   line-height: 1.6;
   align-self: start;
 }
+
+/* ---------- 資料備份 ---------- */
+
+.backup-empty {
+  font-size: 13px;
+  color: var(--ink-muted);
+  padding: 10px 0;
+}
+
+.backup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--paper-shadow);
+  border-radius: var(--control-r);
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.backup-date {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.backup-meta { color: var(--ink-muted); margin-right: auto; }

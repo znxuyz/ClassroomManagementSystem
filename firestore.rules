@@ -147,6 +147,16 @@ service cloud.firestore {
          · 學生只能建立/修改 id 為 {quizId}__{自己的uid} 的那一份
          · 而且文件裡的 uid 欄位必須等於自己,不能偽造成別人
          · 老師可以讀全部(要批改),但不能代寫 */
+      /* 每日備份:只有導師看得到、寫得了。
+         學生完全碰不到,也不需要 —— 這是給老師救資料用的。 */
+      match /backups/{backupId} {
+        function isClassTeacher() {
+          return signedIn()
+            && get(/databases/$(database)/documents/classes/$(classId)).data.teacherUid == request.auth.uid;
+        }
+        allow read, write: if isClassTeacher();
+      }
+
       /* 逐題搶答:一題一份文件,只能建立不能修改。
          · 文件 id 綁定「哪份測驗 + 誰 + 哪一題」,所以同一題只能答一次
          · 時間戳必須是伺服器時間,學生無法把自己的作答時間改早
