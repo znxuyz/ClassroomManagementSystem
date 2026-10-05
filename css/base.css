@@ -124,7 +124,10 @@ body {
      把右邊的班級標籤擠到分頁上面 */
   flex: 1 1 auto;
   min-width: 0;
-  justify-content: center;
+  /* safe center:放得下就置中,放不下就從頭排。
+     單純的 center 在溢出時會把頭尾都切掉 —— 第一個分頁「老師後台」
+     就是這樣被吃成「後台」的。 */
+  justify-content: safe center;
   margin: 0 16px;
   overflow-x: auto;
   scrollbar-width: none;
@@ -170,6 +173,15 @@ body {
   color: var(--paper-warm);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* 老師名稱可能很長(例如「和仁國小蔡忠宏」),
+   不收起來的話整條標籤會變寬,把分頁擠到溢出 */
+#headerTeacherName {
+  max-width: 10em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .class-badge-name {
@@ -408,20 +420,25 @@ select.setup-input {
 
 /* 12 個分頁在 1500px 以下會塞不進標題列。
    與其讓它橫向捲動(捲動條在標題列上很難發現),不如收緊字距與內距。 */
-@media (max-width: 1680px) {
-  /* 副標最先犧牲 —— 它只是裝飾,分頁是功能 */
+/* 副標「CLASSROOM · GUARDIANS」有字距,實際佔掉 238px。
+   分頁有 13 個,雲端模式右邊的班級切換器又寬,兩者加起來連 1920 都塞不下。
+   副標只是裝飾,只在真的很寬的螢幕才留著 —— 分頁是功能。 */
+@media (max-width: 2200px) {
   .brand-tagline { display: none; }
+}
+
+@media (max-width: 1800px) {
   .nav-tab { padding: 8px 12px; letter-spacing: 0.02em; }
   .nav-tabs { margin: 0 12px; }
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1560px) {
   .app-header { padding: 12px 20px; }
   .nav-tab { padding: 7px 9px; font-size: 13px; letter-spacing: 0; }
   .nav-tabs { gap: 2px; margin: 0 8px; }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1320px) {
   /* 再窄就真的放不下了,改成橫向捲動並在右緣留一道漸層提示還有內容 */
   .nav-tabs {
     justify-content: flex-start;

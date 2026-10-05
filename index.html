@@ -9,27 +9,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
 <!-- 樣式表 -->
-<link rel="stylesheet" href="css/base.css?v=20261006e">
-<link rel="stylesheet" href="css/components.css?v=20261006e">
-<link rel="stylesheet" href="css/dashboard.css?v=20261006e">
-<link rel="stylesheet" href="css/tools.css?v=20261006e">
-<link rel="stylesheet" href="css/management.css?v=20261006e">
-<link rel="stylesheet" href="css/contact.css?v=20261006e">
-<link rel="stylesheet" href="css/shop.css?v=20261006e">
-<link rel="stylesheet" href="css/ai.css?v=20261006e">
-<link rel="stylesheet" href="css/report.css?v=20261006e">
-<link rel="stylesheet" href="css/projector.css?v=20261006e">
-<link rel="stylesheet" href="css/settings.css?v=20261006e">
-<link rel="stylesheet" href="css/auth.css?v=20261006e">
-<link rel="stylesheet" href="css/quiz.css?v=20261006e">
-<link rel="stylesheet" href="css/student.css?v=20261006e">
-<link rel="stylesheet" href="css/pet-picker.css?v=20261006e">
-<link rel="stylesheet" href="css/leaderboard.css?v=20261006e">
-<link rel="stylesheet" href="css/territory.css?v=20261006e">
-<link rel="stylesheet" href="css/help.css?v=20261006e">
-<link rel="stylesheet" href="css/switch-hud.css?v=20261006e">
+<link rel="stylesheet" href="css/base.css?v=20261007b">
+<link rel="stylesheet" href="css/components.css?v=20261007b">
+<link rel="stylesheet" href="css/dashboard.css?v=20261007b">
+<link rel="stylesheet" href="css/tools.css?v=20261007b">
+<link rel="stylesheet" href="css/management.css?v=20261007b">
+<link rel="stylesheet" href="css/contact.css?v=20261007b">
+<link rel="stylesheet" href="css/shop.css?v=20261007b">
+<link rel="stylesheet" href="css/ai.css?v=20261007b">
+<link rel="stylesheet" href="css/report.css?v=20261007b">
+<link rel="stylesheet" href="css/projector.css?v=20261007b">
+<link rel="stylesheet" href="css/settings.css?v=20261007b">
+<link rel="stylesheet" href="css/auth.css?v=20261007b">
+<link rel="stylesheet" href="css/quiz.css?v=20261007b">
+<link rel="stylesheet" href="css/student.css?v=20261007b">
+<link rel="stylesheet" href="css/pet-picker.css?v=20261007b">
+<link rel="stylesheet" href="css/leaderboard.css?v=20261007b">
+<link rel="stylesheet" href="css/territory.css?v=20261007b">
+<link rel="stylesheet" href="css/help.css?v=20261007b">
+<link rel="stylesheet" href="css/switch-hud.css?v=20261007b">
 <!-- 主題:掛在 <html data-theme> 上,一定要放最後才蓋得過前面的規則 -->
-<link rel="stylesheet" href="css/theme-aurora.css?v=20261006e">
+<link rel="stylesheet" href="css/theme-aurora.css?v=20261007b">
 <script>
   // 在 CSS 之後、畫面之前就決定主題,避免載入瞬間閃一下舊配色
   document.documentElement.dataset.theme =
@@ -849,6 +849,7 @@
       
       <div class="sub-tabs">
         <button class="sub-tab active" data-subtab="general" onclick="switchSubTab('overview', 'general')">班級概況</button>
+        <button class="sub-tab" data-subtab="rank" onclick="switchSubTab('overview', 'rank')">排行榜</button>
         <button class="sub-tab" data-subtab="report" onclick="switchSubTab('overview', 'report')">學期成長報表</button>
       </div>
       
@@ -867,6 +868,23 @@
         </div>
       </div>
       
+      <!-- 排行榜(和學生看到的同一份排名) -->
+      <div id="rankSubView" class="sub-view">
+        <div class="rank-toolbar">
+          <div class="sub-tabs rank-switch-teacher">
+            <button class="sub-tab active" onclick="setTeacherRankMode('individual')"
+                    data-rankmode="individual">個人</button>
+            <button class="sub-tab" onclick="setTeacherRankMode('group')"
+                    data-rankmode="group">小組</button>
+          </div>
+          <label class="rank-full-toggle">
+            <input type="checkbox" id="rankShowAll" onchange="renderTeacherRank()" checked />
+            顯示完整名次
+          </label>
+        </div>
+        <div id="teacherRankBody"></div>
+      </div>
+
       <!-- 學期成長報表 -->
       <div id="reportSubView" class="sub-view">
         <div class="report-toolbar">
@@ -1039,42 +1057,42 @@
 
 
 <!-- 應用程式邏輯(載入順序很重要) -->
-<script src="js/00-firebase.js?v=20261006e"></script>
-<script src="js/00b-session.js?v=20261006e"></script>
-<script src="js/00c-auth-ui.js?v=20261006e"></script>
-<script src="js/00d-switch-hud.js?v=20261006e"></script>
-<script src="js/01-constants.js?v=20261006e"></script>
-<script src="js/02-state.js?v=20261006e"></script>
-<script src="js/03-storage.js?v=20261006e"></script>
-<script src="js/04-utils.js?v=20261006e"></script>
-<script src="js/05-pet-engine.js?v=20261006e"></script>
-<script src="js/06-ai.js?v=20261006e"></script>
-<script src="js/07-excel.js?v=20261006e"></script>
-<script src="js/10-nav.js?v=20261006e"></script>
-<script src="js/feature-setup.js?v=20261006e"></script>
-<script src="js/feature-students.js?v=20261006e"></script>
-<script src="js/feature-dashboard.js?v=20261006e"></script>
-<script src="js/feature-attendance.js?v=20261006e"></script>
-<script src="js/feature-picker.js?v=20261006e"></script>
-<script src="js/feature-timer.js?v=20261006e"></script>
-<script src="js/feature-seating.js?v=20261006e"></script>
-<script src="js/feature-grouping.js?v=20261006e"></script>
-<script src="js/feature-quiz.js?v=20261006e"></script>
-<script src="js/feature-territory.js?v=20261006e"></script>
-<script src="js/feature-leaderboard.js?v=20261006e"></script>
-<script src="js/feature-student-view.js?v=20261006e"></script>
-<script src="js/feature-contact-book.js?v=20261006e"></script>
-<script src="js/feature-homework.js?v=20261006e"></script>
-<script src="js/feature-shop.js?v=20261006e"></script>
-<script src="js/feature-class-tasks.js?v=20261006e"></script>
-<script src="js/feature-ai-features.js?v=20261006e"></script>
-<script src="js/feature-projector.js?v=20261006e"></script>
-<script src="js/feature-overview.js?v=20261006e"></script>
-<script src="js/feature-report.js?v=20261006e"></script>
-<script src="js/feature-rules.js?v=20261006e"></script>
-<script src="js/feature-help.js?v=20261006e"></script>
-<script src="js/feature-settings.js?v=20261006e"></script>
-<script src="js/99-app.js?v=20261006e"></script>
+<script src="js/00-firebase.js?v=20261007b"></script>
+<script src="js/00b-session.js?v=20261007b"></script>
+<script src="js/00c-auth-ui.js?v=20261007b"></script>
+<script src="js/00d-switch-hud.js?v=20261007b"></script>
+<script src="js/01-constants.js?v=20261007b"></script>
+<script src="js/02-state.js?v=20261007b"></script>
+<script src="js/03-storage.js?v=20261007b"></script>
+<script src="js/04-utils.js?v=20261007b"></script>
+<script src="js/05-pet-engine.js?v=20261007b"></script>
+<script src="js/06-ai.js?v=20261007b"></script>
+<script src="js/07-excel.js?v=20261007b"></script>
+<script src="js/10-nav.js?v=20261007b"></script>
+<script src="js/feature-setup.js?v=20261007b"></script>
+<script src="js/feature-students.js?v=20261007b"></script>
+<script src="js/feature-dashboard.js?v=20261007b"></script>
+<script src="js/feature-attendance.js?v=20261007b"></script>
+<script src="js/feature-picker.js?v=20261007b"></script>
+<script src="js/feature-timer.js?v=20261007b"></script>
+<script src="js/feature-seating.js?v=20261007b"></script>
+<script src="js/feature-grouping.js?v=20261007b"></script>
+<script src="js/feature-quiz.js?v=20261007b"></script>
+<script src="js/feature-territory.js?v=20261007b"></script>
+<script src="js/feature-leaderboard.js?v=20261007b"></script>
+<script src="js/feature-student-view.js?v=20261007b"></script>
+<script src="js/feature-contact-book.js?v=20261007b"></script>
+<script src="js/feature-homework.js?v=20261007b"></script>
+<script src="js/feature-shop.js?v=20261007b"></script>
+<script src="js/feature-class-tasks.js?v=20261007b"></script>
+<script src="js/feature-ai-features.js?v=20261007b"></script>
+<script src="js/feature-projector.js?v=20261007b"></script>
+<script src="js/feature-overview.js?v=20261007b"></script>
+<script src="js/feature-report.js?v=20261007b"></script>
+<script src="js/feature-rules.js?v=20261007b"></script>
+<script src="js/feature-help.js?v=20261007b"></script>
+<script src="js/feature-settings.js?v=20261007b"></script>
+<script src="js/99-app.js?v=20261007b"></script>
 
 </body>
 </html>

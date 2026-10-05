@@ -156,3 +156,68 @@ const Leaderboard = {
       </div>`;
   }
 };
+
+/* ============================================
+   老師端的排行榜
+   ────────────────────────────────────────────
+   和學生看到的是同一份排名(同一個 Leaderboard 模組算出來的),
+   所以不會出現「老師講的名次和學生看到的不一樣」。
+   差別只在老師多了完整名次 —— 學生端刻意只給前三名加自己,
+   避免後段班每天被攤在全班面前。
+============================================ */
+
+let _teacherRankMode = 'individual';
+
+function setTeacherRankMode(mode) {
+  _teacherRankMode = mode;
+  document.querySelectorAll('[data-rankmode]').forEach(b =>
+    b.classList.toggle('active', b.dataset.rankmode === mode));
+  renderTeacherRank();
+}
+
+function renderTeacherRank() {
+  const el = document.getElementById('teacherRankBody');
+  if (!el) return;
+
+  const showAll = document.getElementById('rankShowAll');
+  const full = !showAll || showAll.checked;
+
+  const isGroup = _teacherRankMode === 'group';
+  const rows = isGroup
+    ? Leaderboard.groups(state.students, state.currentGroups)
+    : Leaderboard.individual(state.students);
+
+  if (rows.length === 0) {
+    el.innerHTML = isGroup
+      ? '<div class="empty-state"><div class="empty-state-icon">⌗</div><div>還沒有分組。到「班級管理 → 隨機分組」分好組就會出現小組排名</div></div>'
+      : '<div class="empty-state"><div class="empty-state-icon">🏆</div><div>還沒有人得分</div></div>';
+    return;
+  }
+
+  // 投影給全班看的時候,頒獎台動畫才有意思;老師自己查名次時不用等
+  const podium = Leaderboard.renderPodium(rows, { animate: true });
+
+  const table = full ? `
+    <div class="panel-card" style="margin-top:18px;">
+      <div class="panel-title">完整名次</div>
+      <table class="rank-table">
+        <thead><tr><th>名次</th><th>${isGroup ? '組別' : '座號'}</th>
+          <th>${isGroup ? '成員' : '姓名'}</th><th>累積經驗</th></tr></thead>
+        <tbody>
+          ${rows.map(r => {
+            const s = isGroup ? null : state.students.find(x => x.id === r.id);
+            return `<tr>
+              <td class="rank-no">${r.rank}</td>
+              <td>${isGroup ? '' : escapeHtml((s && s.seatNumber) || '')}</td>
+              <td>${escapeHtml(r.name)}${isGroup
+                   ? `<span class="rank-members">${escapeHtml((r.memberNames || []).join('、'))}</span>` : ''}</td>
+              <td class="rank-score">${r.score}${isGroup
+                   ? `<span class="rank-avg">平均 ${r.average}</span>` : ''}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>` : '';
+
+  el.innerHTML = podium + table;
+}

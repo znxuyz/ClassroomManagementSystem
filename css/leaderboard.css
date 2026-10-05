@@ -264,3 +264,80 @@
 @media (max-width: 400px) {
   .student-tab { font-size: 12px; }
 }
+
+/* ============================================
+   老師端排行榜
+============================================ */
+
+.rank-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.rank-switch-teacher { margin: 0; }
+
+.rank-full-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.rank-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  padding: 0 10px 8px;
+  border-bottom: 1px solid var(--paper-shadow);
+}
+
+.rank-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(11, 18, 32, 0.05);
+}
+
+.rank-no {
+  width: 48px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--forest);
+}
+
+.rank-table tr:nth-child(1) .rank-no { color: var(--gold); }
+
+.rank-score {
+  width: 120px;
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-avg {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.rank-members {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}

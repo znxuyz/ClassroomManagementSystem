@@ -54,6 +54,7 @@ function switchSubTab(parent, subtab) {
   if (subtab === 'tgQuestions') renderTerritoryQuestions();
   if (subtab === 'helpTeacher' || subtab === 'helpStudent') renderHelpView();
   if (subtab === 'general') renderOverview();
+  if (subtab === 'rank') renderTeacherRank();
   if (subtab === 'report') renderReportStudentList();
   if (subtab === 'aiComment') renderAiCommentStudentList();
   if (subtab === 'aiPolish') {} // 純表單,不需特別渲染
@@ -65,6 +66,7 @@ function renderOverviewView() {
   if (activeSubtab) {
     const subtabName = activeSubtab.dataset.subtab;
     if (subtabName === 'general') renderOverview();
+    if (subtabName === 'rank') renderTeacherRank();
     if (subtabName === 'report') renderReportStudentList();
   }
 }
