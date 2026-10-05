@@ -1,8 +1,12 @@
 /* ============================================
-   切換班級的進度提示
+   進度提示窗(共用)
+   ────────────────────────────────────────────
+   切換班級與 AI 分析都用這一套 —— 兩邊都是「要等一下、而且使用者
+   需要知道現在卡在哪一步」的情境,長得一樣才不會像兩個系統。
+   用法見 js/00d-switch-hud.js 與 js/06b-ai-hud.js。
 ============================================ */
 
-.switch-hud {
+.hud {
   position: fixed;
   inset: 0;
   z-index: 9000;
@@ -17,12 +21,12 @@
   transition: opacity 0.22s var(--ease-out);
 }
 
-.switch-hud.is-open {
+.hud.is-open {
   opacity: 1;
   pointer-events: auto;   /* 切換期間擋住點擊,避免動到還沒換完的資料 */
 }
 
-.switch-hud-panel {
+.hud-panel {
   position: relative;
   overflow: hidden;
   width: min(420px, 90vw);
@@ -36,31 +40,31 @@
   transition: transform 0.28s var(--ease-out);
 }
 
-.switch-hud.is-open .switch-hud-panel { transform: none; }
+.hud.is-open .hud-panel { transform: none; }
 
 /* 一道掃過去的光。只是氣氛,不擋任何操作。 */
-.switch-hud-scan {
+.hud-scan {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: linear-gradient(100deg, transparent 30%,
               rgba(126, 160, 255, 0.16) 50%, transparent 70%);
   transform: translateX(-100%);
-  animation: switchScan 1.9s linear infinite;
+  animation: hudScan 1.9s linear infinite;
 }
 
-@keyframes switchScan {
+@keyframes hudScan {
   to { transform: translateX(100%); }
 }
 
-.switch-hud-kicker {
+.hud-kicker {
   font-size: 11px;
   letter-spacing: 0.28em;
   color: #8fa0c0;
   margin-bottom: 6px;
 }
 
-.switch-hud-title {
+.hud-title {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 21px;
@@ -68,7 +72,7 @@
   margin-bottom: 16px;
 }
 
-.switch-hud-bar {
+.hud-bar {
   height: 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
@@ -76,7 +80,7 @@
   margin-bottom: 16px;
 }
 
-.switch-hud-bar i {
+.hud-bar i {
   display: block;
   height: 100%;
   width: 0;
@@ -85,7 +89,7 @@
   transition: width 0.3s var(--ease-out);
 }
 
-.switch-hud-steps {
+.hud-steps {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -94,7 +98,7 @@
   font-size: 13px;
 }
 
-.switch-hud-steps li {
+.hud-steps li {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -102,11 +106,11 @@
   transition: color 0.2s var(--ease-out);
 }
 
-.switch-hud-steps li.is-doing { color: #e7edf5; }
-.switch-hud-steps li.is-done  { color: #9fb2d4; }
-.switch-hud-steps li.is-fail  { color: #ff8e82; }
+.hud-steps li.is-doing { color: #e7edf5; }
+.hud-steps li.is-done  { color: #9fb2d4; }
+.hud-steps li.is-fail  { color: #ff8e82; }
 
-.switch-hud-dot {
+.hud-dot {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
@@ -119,40 +123,40 @@
   line-height: 1;
 }
 
-.is-done .switch-hud-dot {
+.is-done .hud-dot {
   background: rgba(45, 225, 194, 0.18);
   border-color: rgba(45, 225, 194, 0.5);
   color: #2de1c2;
 }
 
-.is-doing .switch-hud-dot {
+.is-doing .hud-dot {
   border-color: rgba(126, 160, 255, 0.6);
   background: rgba(61, 89, 232, 0.2);
 }
 
-.is-fail .switch-hud-dot {
+.is-fail .hud-dot {
   background: rgba(255, 110, 96, 0.18);
   border-color: rgba(255, 110, 96, 0.6);
   color: #ff8e82;
 }
 
-.switch-hud-spin {
+.hud-spin {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   border: 1.5px solid rgba(255, 255, 255, 0.25);
   border-top-color: #7ea0ff;
-  animation: switchSpin 0.7s linear infinite;
+  animation: hudSpin 0.7s linear infinite;
 }
 
-@keyframes switchSpin {
+@keyframes hudSpin {
   to { transform: rotate(360deg); }
 }
 
 /* display:flex 會蓋掉 hidden 屬性,沒這一條的話沒出錯時也會留一條分隔線 */
-.switch-hud-error[hidden] { display: none; }
+.hud-error[hidden] { display: none; }
 
-.switch-hud-error {
+.hud-error {
   margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -166,7 +170,57 @@
 
 /* 會動的東西都尊重系統設定 */
 @media (prefers-reduced-motion: reduce) {
-  .switch-hud-scan { animation: none; }
-  .switch-hud-spin { animation-duration: 2s; }
-  .switch-hud-panel { transition: none; }
+  .hud-scan { animation: none; }
+  .hud-spin { animation-duration: 2s; }
+  .hud-panel { transition: none; }
+}
+
+/* ---------- AI 工作中 ----------
+   和切換班級共用同一個面板,只是內容換成「階段 + 經過秒數」。 */
+
+.hud-sub {
+  font-size: 13px;
+  color: #9fb2d4;
+  margin: -10px 0 16px;
+}
+
+.hud-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #cdd6e6;
+}
+
+/* 經過的秒數是真的,所以給它等寬數字,跳動時不會晃 */
+.hud-time {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  color: #8fa0c0;
+  flex-shrink: 0;
+}
+
+.hud-note {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #6d7d99;
+}
+
+.hud-foot {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 面板裡的淺色按鈕要能在深底上看見 */
+.hud .btn-ghost {
+  color: #cdd6e6;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: transparent;
+}
+
+.hud .btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
 }

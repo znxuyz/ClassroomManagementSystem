@@ -14,7 +14,8 @@ const AI = {
   getModel() { return localStorage.getItem(this.MODEL_STORAGE) || this.DEFAULT_MODEL; },
   setModel(model) { localStorage.setItem(this.MODEL_STORAGE, model); },
   
-  async call(systemPrompt, userPrompt, maxTokens = 2000) {
+  /* signal 讓呼叫端可以中途取消 —— 等 30 秒卻不能喊停是很糟的體驗 */
+  async call(systemPrompt, userPrompt, maxTokens = 2000, signal) {
     const key = this.getKey();
     if (!key) throw new Error('NO_KEY');
     
@@ -33,7 +34,8 @@ const AI = {
         'anthropic-version': '2023-06-01',
         'anthropic-dangerous-direct-browser-access': 'true'
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal
     });
     
     if (!res.ok) {

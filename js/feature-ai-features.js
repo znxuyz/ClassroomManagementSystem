@@ -155,11 +155,13 @@ ${obs}
 
 注意:三個版本要有明顯不同的切入角度,不只是換詞而已。`;
   
-  results.innerHTML = '<div class="ai-loading"><div class="ai-spinner"></div><div>AI 正在思考中...</div></div>';
+  results.innerHTML = '';
   results.classList.add('active');
   
   try {
-    const text = await AI.call(systemPrompt, userPrompt, 2500);
+    const text = await runWithAiHUD('評語生成', s.name, 15000,
+      signal => AI.call(systemPrompt, userPrompt, 2500, signal));
+    if (text === null) { results.classList.remove('active'); return; }
     displayAiResults(results, text);
   } catch (e) {
     results.innerHTML = `<div class="ai-error">❌ ${e.message}</div>`;
@@ -213,11 +215,13 @@ ${draft}
 
 三個版本應該有明顯的語氣差異,讓老師根據情境選用。`;
   
-  results.innerHTML = '<div class="ai-loading"><div class="ai-spinner"></div><div>AI 正在潤飾中...</div></div>';
+  results.innerHTML = '';
   results.classList.add('active');
   
   try {
-    const text = await AI.call(systemPrompt, userPrompt, 2500);
+    const text = await runWithAiHUD('訊息潤飾', '', 15000,
+      signal => AI.call(systemPrompt, userPrompt, 2500, signal));
+    if (text === null) { results.classList.remove('active'); return; }
     displayAiResults(results, text);
   } catch (e) {
     results.innerHTML = `<div class="ai-error">❌ ${e.message}</div>`;
@@ -356,11 +360,14 @@ ${extra ? '【老師補充說明】\n' + extra : ''}
 【建議的後續行動】
 (給老師 3-5 條具體可行的建議)`;
   
-  results.innerHTML = '<div class="ai-loading"><div class="ai-spinner"></div><div>AI 正在分析行為資料...(可能需要 10-30 秒)</div></div>';
+  results.innerHTML = '';
   results.classList.add('active');
-  
+
   try {
-    const text = await AI.call(systemPrompt, userPrompt, 3000);
+    // 分析要讀整段歷程,是三個功能裡最久的,預估抓 25 秒
+    const text = await runWithAiHUD('行為觀察分析', s.name, 25000,
+      signal => AI.call(systemPrompt, userPrompt, 3000, signal));
+    if (text === null) { results.classList.remove('active'); return; }   // 使用者取消
     displayAiResults(results, text, true);
   } catch (e) {
     results.innerHTML = `<div class="ai-error">❌ ${e.message}</div>`;

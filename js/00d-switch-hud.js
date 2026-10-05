@@ -30,17 +30,17 @@ const SwitchHUD = {
 
     if (!this.el) {
       this.el = document.createElement('div');
-      this.el.className = 'switch-hud';
+      this.el.className = 'hud is-switch';
       document.body.appendChild(this.el);
     }
     this.el.innerHTML = `
-      <div class="switch-hud-panel" role="status" aria-live="polite">
-        <div class="switch-hud-scan"></div>
-        <div class="switch-hud-kicker">切換班級</div>
-        <div class="switch-hud-title" id="switchHudTitle">${escapeHtml(className || '')}</div>
-        <div class="switch-hud-bar"><i id="switchHudBar"></i></div>
-        <ul class="switch-hud-steps" id="switchHudSteps"></ul>
-        <div class="switch-hud-error" id="switchHudError" hidden></div>
+      <div class="hud-panel" role="status" aria-live="polite">
+        <div class="hud-scan"></div>
+        <div class="hud-kicker">切換班級</div>
+        <div class="hud-title" id="switchHudTitle">${escapeHtml(className || '')}</div>
+        <div class="hud-bar"><i id="switchHudBar"></i></div>
+        <ul class="hud-steps" id="switchHudSteps"></ul>
+        <div class="hud-error" id="switchHudError" hidden></div>
       </div>`;
     this.el.classList.add('is-open');
     this.paint();
@@ -79,9 +79,9 @@ const SwitchHUD = {
     list.innerHTML = this.steps.map(s => {
       const icon = s.state === 'done' ? '✓'
                  : s.state === 'fail' ? '✕'
-                 : s.state === 'doing' ? '<span class="switch-hud-spin"></span>'
+                 : s.state === 'doing' ? '<span class="hud-spin"></span>'
                  : '';
-      return `<li class="is-${s.state}"><span class="switch-hud-dot">${icon}</span>${s.label}</li>`;
+      return `<li class="is-${s.state}"><span class="hud-dot">${icon}</span>${s.label}</li>`;
     }).join('');
 
     const done = this.steps.filter(s => s.state === 'done').length;
