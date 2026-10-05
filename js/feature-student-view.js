@@ -210,7 +210,7 @@ const StudentApp = {
                 onclick="StudentApp.setTab('war')">領地戰</button>` : ''}
       </nav>
 
-      <main class="student-main">
+      <main class="student-main ${this.tab === 'war' ? 'is-war' : ''}">
         ${(this.degraded || []).length ? `
           <div class="student-degraded">
             這些功能暫時讀不到:${this.degraded.map(d =>
@@ -937,6 +937,15 @@ Object.assign(StudentApp, {
 
   renderWarTab() {
     const c = TerritoryGame.config;
+    // 畫完之後把畫面帶到自己的領地。只做一次 —— 之後每次戰況更新都搶
+    // 捲動位置的話,學生正在看別處會一直被拉回來。
+    if (!this._warCentered) {
+      requestAnimationFrame(() => {
+        if (this.tab !== 'war' || this.tQuestion) return;
+        const g = this.myGroupIdx();
+        if (g != null && centerOnGroup(g, { instant: true })) this._warCentered = true;
+      });
+    }
     if (!c) return '<div class="student-empty">老師還沒開始領地戰</div>';
 
     const map = TerritoryGame.map;
@@ -958,7 +967,11 @@ Object.assign(StudentApp, {
 
     return `
       <div class="war-header" style="border-color:${color}">
-        <div class="war-my-group" style="color:${color}">我是第 ${groupIdx + 1} 組</div>
+        <div class="war-head-row">
+          <div class="war-my-group" style="color:${color}">我是第 ${groupIdx + 1} 組</div>
+          <button class="btn btn-ghost btn-small"
+                  onclick="centerOnGroup(${groupIdx})">⌖ 回到我的領地</button>
+        </div>
         <div class="war-hint">
           點選<strong>亮起來</strong>的地塊發動攻擊(有 ${targets.size} 格可打)<br>
           ${nextAt
@@ -966,7 +979,6 @@ Object.assign(StudentApp, {
             : '地圖已全部開放'}
         </div>
       </div>
-      ${this.tResult ? `<div class="war-result ${this.tResult.ok ? 'ok' : 'no'}">${escapeHtml(this.tResult.msg)}</div>` : ''}
       ${renderStandings(c, map, groupIdx)}
       ${renderHexMap(c, map, { groupIdx, onClick: 'StudentApp.attackHex', zoom: _territoryZoom })}
       <div class="war-legend">
@@ -1077,13 +1089,14 @@ Object.assign(StudentApp, {
         answer: this.tPickedAnswer,
         points
       });
-      this.tResult = { ok: true, msg: `✦ 答對!為第 ${groupIdx + 1} 組拿下 ${points} 佔領分` };
+      showWarResult(true, `為第 ${groupIdx + 1} 組拿下 ${points} 佔領分`);
     } catch (e) {
       if (e.code === 'permission-denied') {
-        this.tResult = { ok: false, msg: '答錯了,再挑一格試試' };
+        // 答案由安全規則在伺服器端比對,被拒絕就代表答錯
+        showWarResult(false, '這一題答錯了,換一格再試試');
       } else {
         console.error(e);
-        this.tResult = { ok: false, msg: '送出失敗:' + e.message };
+        showWarResult(null, '送出失敗:' + e.message);
       }
     } finally {
       this.tSubmitting = false;
@@ -1093,3 +1106,38 @@ Object.assign(StudentApp, {
     }
   }
 });
+
+/* ============================================
+   答題結果提示
+   ────────────────────────────────────────────
+   原本只在畫面上方放一條小橫幅,學生按完送出、畫面一跳,
+   常常根本沒注意到自己到底答對還是答錯。改成擋在中央的對話框:
+   要按一下才會消失,想不看到都難。
+============================================ */
+function showWarResult(ok, message) {
+  let el = document.getElementById('warResultModal');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'warResultModal';
+    el.className = 'war-result-modal';
+    document.body.appendChild(el);
+  }
+
+  const kind = ok === true ? 'ok' : ok === false ? 'no' : 'err';
+  const mark = ok === true ? '✓' : ok === false ? '✕' : '!';
+  const title = ok === true ? '答對了!' : ok === false ? '答錯了' : '送出失敗';
+
+  el.innerHTML = `
+    <div class="war-result-card is-${kind}">
+      <div class="war-result-mark">${mark}</div>
+      <div class="war-result-title">${title}</div>
+      <div class="war-result-msg">${escapeHtml(message)}</div>
+      <button class="btn btn-primary btn-block" onclick="hideWarResult()">繼續</button>
+    </div>`;
+  el.classList.add('is-open');
+}
+
+function hideWarResult() {
+  const el = document.getElementById('warResultModal');
+  if (el) el.classList.remove('is-open');
+}

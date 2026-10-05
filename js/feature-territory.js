@@ -810,6 +810,8 @@ function renderHexMap(config, map, opts) {
 
     return `<g class="hex ${canAttack && !editing ? 'attackable' : ''} ${cell.isBase ? 'base' : ''}
                  ${cell.battle ? 'in-battle' : ''} ${selected.has(k) ? 'picked' : ''}"
+      ${owned ? `data-owner="${cell.owner}"` : ''}
+      ${canAttack ? 'data-attackable="1"' : ''}
       ${editing ? `onclick="territoryPick('${k}')"`
                 : (canAttack && o.onClick ? `onclick="${o.onClick}('${k}')"` : '')}>
       <polygon points="${pts}" fill="${fill}" stroke="#fbf8f0" stroke-width="2" />
@@ -819,9 +821,13 @@ function renderHexMap(config, map, opts) {
     </g>`;
   }).join('');
 
-  // 大地圖放進可捲動的容器,並提供縮放 —— 否則兩千格縮成一片馬賽克
+  /* 大地圖放進可捲動的容器,並提供縮放。
+     關鍵是用「地圖的原始尺寸」當 100%,不要硬塞進固定寬度 ——
+     以前是 min(vw, 1100),於是半徑 15 的世界地圖被壓到 1100px 寬,
+     每一格只剩十幾像素,學生根本看不清楚,也因為塞得下而完全不能捲動,
+     「帶我回自己的領地」自然也就沒有意義。 */
   const zoom = o.zoom || 1;
-  const width = Math.round(Math.min(vw, 1100) * zoom);
+  const width = Math.round(vw * zoom);
 
   return `
     <div class="hex-map-wrap">
@@ -829,6 +835,7 @@ function renderHexMap(config, map, opts) {
         <button class="btn btn-ghost btn-small" onclick="territoryZoom(-1)">－</button>
         <span class="hex-zoom-label">${Math.round(zoom * 100)}%</span>
         <button class="btn btn-ghost btn-small" onclick="territoryZoom(1)">＋</button>
+        <button class="btn btn-ghost btn-small" onclick="territoryFit()" title="縮到看得見整張地圖">整張</button>
         ${editing ? `
           <span class="hex-edit-count">已選 ${selected.size} 格</span>
           <button class="btn btn-primary btn-small" onclick="territoryApplyPick(true)">開放選取</button>
@@ -860,11 +867,59 @@ function renderHexMap(config, map, opts) {
     </div>`;
 }
 
+/* 把畫面捲到某一組的領地中央。
+   地圖動輒上千格,學生打開常常不知道自己在哪一角 —— 與其叫他們找,
+   不如直接帶過去。用畫面實際座標算,不必再推一次六角座標。 */
+function centerOnGroup(groupIdx, opts) {
+  const box = document.querySelector('.hex-map-scroll');
+  if (!box) return false;
+
+  let marks = [...box.querySelectorAll(`.hex[data-owner="${groupIdx}"]`)];
+  // 還沒佔到任何格子(或剛被打下來)就退而求其次,帶到可攻擊的地方
+  if (marks.length === 0) marks = [...box.querySelectorAll('.hex[data-attackable="1"]')];
+  if (marks.length === 0) return false;
+
+  const bb = box.getBoundingClientRect();
+  let sx = 0, sy = 0;
+  marks.forEach(el => {
+    const r = el.getBoundingClientRect();
+    sx += r.left + r.width / 2;
+    sy += r.top + r.height / 2;
+  });
+  const cx = sx / marks.length - bb.left + box.scrollLeft;
+  const cy = sy / marks.length - bb.top + box.scrollTop;
+
+  box.scrollTo({
+    left: Math.max(0, cx - box.clientWidth / 2),
+    top: Math.max(0, cy - box.clientHeight / 2),
+    behavior: (opts && opts.instant) ? 'auto' : 'smooth'
+  });
+  _hexScrollSave(box);
+  return true;
+}
+
 /* 縮放級距。上千格的地圖預設會縮得很小,放大才看得清楚 */
 let _territoryZoom = 1;
 function territoryZoom(dir) {
-  _territoryZoom = Math.max(0.5, Math.min(6, _territoryZoom + dir * 0.5));
+  // 下限放到 0.25:史詩尺寸的地圖要縮很多才看得到全貌
+  const step = _territoryZoom <= 0.5 ? 0.125 : 0.25;
+  _territoryZoom = Math.max(0.25, Math.min(4, _territoryZoom + dir * step));
+  _territoryZoom = Math.round(_territoryZoom * 1000) / 1000;
   _lastMapSig = null;                       // 強制重繪
+  if (typeof StudentApp !== 'undefined' && StudentApp.tab === 'war') StudentApp.render();
+  else renderTerritoryLive();
+}
+
+/* 縮到整張地圖剛好看得見 */
+function territoryFit() {
+  const box = document.querySelector('.hex-map-scroll');
+  const svg = box && box.querySelector('.hex-map');
+  if (!box || !svg) return;
+  const natural = svg.getBoundingClientRect().width / _territoryZoom;
+  if (!natural) return;
+  _territoryZoom = Math.max(0.25, Math.min(4,
+    Math.floor((box.clientWidth - 8) / natural * 100) / 100));
+  _lastMapSig = null;
   if (typeof StudentApp !== 'undefined' && StudentApp.tab === 'war') StudentApp.render();
   else renderTerritoryLive();
 }

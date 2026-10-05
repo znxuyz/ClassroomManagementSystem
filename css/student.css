@@ -458,3 +458,96 @@
   line-height: 1.7;
   color: var(--ink-soft);
 }
+
+/* ============================================
+   領地戰:地圖要大
+   ────────────────────────────────────────────
+   學生端整頁限寬 560px,對守護獸和測驗剛好,但地圖被勒得只剩一條。
+   只有領地戰這個分頁放寬。
+============================================ */
+
+.student-main.is-war {
+  max-width: 1240px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.student-main.is-war .hex-map-scroll {
+  max-height: 72vh;
+}
+
+.war-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- 答題結果對話框 ---------- */
+
+.war-result-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 13, 24, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s var(--ease-out);
+}
+
+.war-result-modal.is-open { opacity: 1; pointer-events: auto; }
+
+.war-result-card {
+  width: min(340px, 100%);
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 26px 24px 20px;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.94);
+  transition: transform 0.2s var(--ease-out);
+}
+
+.war-result-modal.is-open .war-result-card { transform: none; }
+
+.war-result-mark {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.is-ok  .war-result-mark { background: var(--healthy); }
+.is-no  .war-result-mark { background: var(--sick); }
+.is-err .war-result-mark { background: var(--mild); }
+
+.war-result-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.is-ok  .war-result-title { color: var(--healthy); }
+.is-no  .war-result-title { color: var(--sick); }
+.is-err .war-result-title { color: var(--mild); }
+
+.war-result-msg {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
