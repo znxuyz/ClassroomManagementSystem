@@ -249,3 +249,18 @@
   opacity: 1;
   transform: none;
 }
+
+/* 分頁最多會到六個(加上領地戰與說明)。
+   手機寬度下每格只剩七十幾像素,字再大一點就換行了。 */
+.student-tab {
+  white-space: nowrap;
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .student-tab { padding: 12px 4px; font-size: 13px; letter-spacing: 0; }
+}
+
+@media (max-width: 400px) {
+  .student-tab { font-size: 12px; }
+}

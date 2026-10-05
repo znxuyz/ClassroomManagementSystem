@@ -15,6 +15,7 @@ function switchView(name) {
   if (name === 'ai') renderAiView();
   if (name === 'quiz') renderQuizList();
   if (name === 'territory') renderTerritoryView();
+  if (name === 'help') renderHelpView();
 }
 
 /* 重畫目前停留的那一頁。
@@ -51,6 +52,7 @@ function switchSubTab(parent, subtab) {
   if (subtab === 'tasks') renderTasksList();
   if (subtab === 'tgBoard') { renderTerritoryBoard(); renderTerritoryFeed(); }
   if (subtab === 'tgQuestions') renderTerritoryQuestions();
+  if (subtab === 'helpTeacher' || subtab === 'helpStudent') renderHelpView();
   if (subtab === 'general') renderOverview();
   if (subtab === 'report') renderReportStudentList();
   if (subtab === 'aiComment') renderAiCommentStudentList();

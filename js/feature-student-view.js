@@ -196,7 +196,7 @@ const StudentApp = {
 
       <nav class="student-tabs">
         <button class="student-tab ${this.tab === 'pet' ? 'active' : ''}"
-                onclick="StudentApp.setTab('pet')">我的守護獸</button>
+                onclick="StudentApp.setTab('pet')">守護獸</button>
         <button class="student-tab ${this.tab === 'rank' ? 'active' : ''}"
                 onclick="StudentApp.setTab('rank')">排行榜</button>
         <button class="student-tab ${this.tab === 'quiz' ? 'active' : ''}"
@@ -208,6 +208,8 @@ const StudentApp = {
         ${TerritoryGame.config && TerritoryGame.config.status === 'running' ? `
         <button class="student-tab war ${this.tab === 'war' ? 'active' : ''}"
                 onclick="StudentApp.setTab('war')">領地戰</button>` : ''}
+        <button class="student-tab ${this.tab === 'help' ? 'active' : ''}"
+                onclick="StudentApp.setTab('help')" title="使用說明">說明</button>
       </nav>
 
       <main class="student-main ${this.tab === 'war' ? 'is-war' : ''}">
@@ -222,6 +224,7 @@ const StudentApp = {
         ${this.tab === 'quiz' ? this.renderQuizTab() : ''}
         ${this.tab === 'shop' ? this.renderShopTab() : ''}
         ${this.tab === 'war'  ? this.renderWarTab()  : ''}
+        ${this.tab === 'help' ? renderHelpSections(HELP.student) : ''}
       </main>
     `;
   },

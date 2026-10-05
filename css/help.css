@@ -1,0 +1,79 @@
+/* ============================================
+   使用說明
+   ────────────────────────────────────────────
+   兩端共用這一套樣式。老師端寬、學生端窄,但結構一樣。
+============================================ */
+
+.help-wrap {
+  max-width: 820px;
+}
+
+.help-note {
+  background: var(--paper-warm);
+  border-left: 3px solid var(--forest-light);
+  border-radius: 0 var(--control-r) var(--control-r) 0;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.help-sec {
+  background: var(--paper);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+
+.help-sec-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--forest);
+}
+
+/* 固定寬度的圖示欄,標題文字才會對齊成一直線 */
+.help-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--paper-warm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.help-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+.help-list li::marker { color: var(--moss); }
+
+.help-list strong { color: var(--ink); }
+
+.help-list code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-shadow);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* 學生端:字再大一點,手機上要好讀 */
+.student-main .help-sec { padding: 16px 16px; }
+.student-main .help-sec-title { font-size: 16px; }
+.student-main .help-list { font-size: 14.5px; }
