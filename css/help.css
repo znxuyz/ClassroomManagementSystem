@@ -109,3 +109,34 @@
 /* 扣分項用紅色,正負一眼分得開 */
 .help-rule.is-minus { border-color: rgba(194, 91, 78, 0.35); }
 .help-rule.is-minus b { color: var(--sick); }
+
+/* 經驗來源:一列一種,標題固定寬度,四種並排看得出是「就這四種」 */
+.help-ways {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+
+.help-way {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-shadow);
+  border-radius: var(--control-r);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.help-way b {
+  flex-shrink: 0;
+  width: 72px;
+  color: var(--forest);
+  font-family: var(--font-display);
+}
+
+@media (max-width: 460px) {
+  .help-way { flex-direction: column; gap: 2px; }
+  .help-way b { width: auto; }
+}

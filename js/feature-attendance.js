@@ -122,17 +122,12 @@ function awardAttendancePoints() {
     return;
   }
   
+  /* 一律走共用的發分函式。
+     這裡本來是自己改欄位,而且寫了 currentPoints = totalPoints ——
+     等於把學生在商店花掉的點數全部還給他:花了 90 點的學生只要被記一次
+     出席,可用積分就跳回累積經驗的數字。 */
   presentIds.forEach(id => {
-    const student = getStudent(id);
-    if (!student) return;
-    student.totalPoints = Math.max(0, student.totalPoints + 1);
-    student.currentPoints = student.totalPoints;
-    student.lastPointTime = Date.now();
-    student.history.push({
-      time: Date.now(),
-      points: 1,
-      reason: '出席分(' + date + ')'
-    });
+    applyPointsToStudent(id, 1, '出席分(' + date + ')');
   });
   
   save();

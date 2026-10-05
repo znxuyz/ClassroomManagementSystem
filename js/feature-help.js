@@ -43,18 +43,33 @@ function helpRuleSections(rules) {
           ? '也有扣分項目:' + `<div class="help-rules">${chips(minus)}</div>` +
             '扣分<strong>只扣可用積分</strong>,累積經驗不會減少,所以守護獸不會退化。'
           : '',
+        '<strong>點名出席</strong>。老師按下發放出席分時,當天被記為出席的每人 +1。',
+        '<strong>繳交作業</strong>。準時繳交拿該項作業設定的分數,遲交拿一半(無條件捨去)。',
         '<strong>線上測驗答對</strong>。得分 = 答對題數 × 每題分數,每題幾分由老師在建立測驗時決定,寫在測驗卡片上。',
         '如果是<strong>搶答類</strong>的測驗(逐題搶答、整份前幾名),只有排進名次的人拿得到分,其他人答對也沒有分 —— 卡片上會寫明。',
-        '<strong>領地戰</strong>答對會得到佔領分(用來搶地,不是個人積分)。'
+        '<strong>領地戰不給個人積分</strong>。那裡的佔領分只用來搶地。'
       ].filter(Boolean)
     },
     {
       icon: '🐣',
-      title: '守護獸怎麼進化',
+      title: '守護獸的經驗怎麼來',
       items: [
-        '看的是<strong>累積經驗</strong>,不是可用積分 —— 換獎品不影響進化。',
-        '目前的門檻:' + `<div class="help-rules">${stages}</div>`,
-        '累積經驗<strong>只會增加</strong>,所以進化之後不會退回去。'
+        '守護獸吃的是<strong>累積經驗</strong>。你<strong>每拿到一分,經驗就 +1</strong>,' +
+          '完全一樣的數字,不用另外做什麼去餵牠。',
+        '會增加經驗的,就是下面這四種:' +
+          '<div class="help-ways">' +
+            '<div class="help-way"><b>老師發分</b>照上面那張表的項目,老師在課堂上按給你</div>' +
+            '<div class="help-way"><b>點名出席</b>當天被記為出席,老師發放出席分時每人 +1</div>' +
+            '<div class="help-way"><b>繳交作業</b>準時繳交拿該項作業的分數,遲交拿一半(無條件捨去)</div>' +
+            '<div class="help-way"><b>測驗答對</b>答對題數 × 每題分數;搶答類要排進名次才有</div>' +
+          '</div>',
+        '<strong>領地戰不會增加經驗。</strong>那裡答對拿到的是佔領分,只用來搶地,' +
+          '跟守護獸和商店都沒有關係。',
+        '<strong>被扣分不會減少經驗。</strong>扣分只扣可用積分,' +
+          '所以守護獸<strong>只會前進、不會退化</strong>,換獎品也一樣。',
+        '經驗累積到門檻就進化:' + `<div class="help-rules">${stages}</div>`,
+        '守護獸的<strong>心情</strong>看的是「多久沒被加分」:超過 3 天會微恙、' +
+          '超過 7 天會生病。被加分就會恢復。'
       ]
     },
     {
