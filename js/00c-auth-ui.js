@@ -175,7 +175,10 @@ async function enterStudentView(classInfo) {
     await StudentApp.enter(classInfo);
   } catch (e) {
     console.error(e);
-    toast('載入失敗:' + e.message);
+    // 原文是英文的 Missing or insufficient permissions,學生看不懂也幫不上忙
+    toast(e.code === 'permission-denied'
+      ? '載入失敗:權限不足,請老師到 Firebase 重新發布安全性規則'
+      : '載入失敗:' + e.message);
   }
 }
 

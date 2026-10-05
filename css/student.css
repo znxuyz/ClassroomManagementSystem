@@ -446,3 +446,15 @@
 
 .student-history-points.pos { color: var(--forest-light); }
 .student-history-points.neg { color: var(--sick); }
+
+/* 部分功能讀不到時的提示。不擋畫面,但要讓學生知道該找老師 */
+.student-degraded {
+  background: rgba(217, 164, 65, 0.16);
+  border-left: 3px solid var(--mild);
+  border-radius: 3px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}

@@ -143,7 +143,9 @@
   min-width: 0;
 }
 
-.student-name {
+/* 一定要綁在 .student-item 底下:學生端的頁首也有一個 .student-name,
+   不綁的話那邊會被塗成深色文字,配上深色頁首等於看不見。 */
+.student-item .student-name {
   font-weight: 600;
   font-size: 14px;
   color: var(--ink);

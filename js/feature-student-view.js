@@ -117,12 +117,18 @@ const StudentApp = {
 
     this.readGroups(blob);
 
+    /* 以下都是「有最好,沒有也還能用」的東西。
+       之前任何一個被安全規則擋下來,整個登入就失敗,學生只看到一句
+       Missing or insufficient permissions —— 守護獸、積分明明都讀到了
+       卻什麼也看不到。改成各自獨立,壞掉的那塊退掉就好。 */
+    this.degraded = [];
+
     // 老師還沒把選擇收進班級資料前,先用學生自己的選擇單顯示
     this.petChoice = this.student && this.student.pet
       ? null
-      : await Cloud.getMyPetChoice(classId, Cloud.uid);
+      : await this.optional('守護獸選擇', () => Cloud.getMyPetChoice(classId, Cloud.uid), null);
 
-    this.quizzes = await Cloud.listQuizzesForStudent(classId);
+    this.quizzes = await this.optional('測驗', () => Cloud.listQuizzesForStudent(classId), []);
 
     // 逐份查自己交過沒 — 開放中的測驗通常不多,這裡的查詢量很小
     this.submissions = {};
@@ -130,15 +136,31 @@ const StudentApp = {
     for (const q of this.quizzes) {
       if (q.scoreMode === 'perQuestion') {
         // 逐題搶答沒有交卷動作,進度看的是自己答過幾題
-        const mine = await Cloud.listMyQuizAnswers(classId, q.id, Cloud.uid);
+        const mine = await this.optional('作答進度',
+          () => Cloud.listMyQuizAnswers(classId, q.id, Cloud.uid), {});
         this.qProgress[q.id] = Object.keys(mine).length;
       } else {
-        const sub = await Cloud.getMySubmission(classId, q.id, Cloud.uid);
+        const sub = await this.optional('作答紀錄',
+          () => Cloud.getMySubmission(classId, q.id, Cloud.uid), null);
         if (sub) this.submissions[q.id] = sub;
       }
     }
 
     this.render();
+  },
+
+  /* 讀不到就退回預設值,並記下是哪一塊壞了 */
+  async optional(label, fn, fallback) {
+    try {
+      return await fn();
+    } catch (e) {
+      console.warn(`[學生端] ${label} 讀取失敗:`, e.code || e.message);
+      const why = e.code === 'permission-denied' ? '權限不足' : '讀取失敗';
+      if (!this.degraded.some(d => d.label === label)) {
+        this.degraded.push({ label, why });
+      }
+      return fallback;
+    }
   },
 
   /* ---------- 主畫面 ---------- */
@@ -189,6 +211,12 @@ const StudentApp = {
       </nav>
 
       <main class="student-main">
+        ${(this.degraded || []).length ? `
+          <div class="student-degraded">
+            這些功能暫時讀不到:${this.degraded.map(d =>
+              `${escapeHtml(d.label)}(${d.why})`).join('、')}。<br>
+            守護獸與積分不受影響,請告訴老師看看。
+          </div>` : ''}
         ${this.tab === 'pet'  ? this.renderPetTab()  : ''}
         ${this.tab === 'rank' ? this.renderRankTab() : ''}
         ${this.tab === 'quiz' ? this.renderQuizTab() : ''}
