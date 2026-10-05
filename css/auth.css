@@ -184,3 +184,16 @@
 .sync-status.syncing { background: rgba(200, 164, 77, 0.3); color: #f0dfae; }
 .sync-status.error   { background: rgba(194, 91, 78, 0.35); color: #f3c9c4; }
 .sync-status.local   { background: rgba(255, 255, 255, 0.12); color: var(--paper); }
+
+/* 登入帳號的顯示。學生要把這個字串念給老師聽,所以要好讀、可選取 */
+.gate-account {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-shadow);
+  border-radius: var(--control-r);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  word-break: break-all;
+  user-select: all;
+}

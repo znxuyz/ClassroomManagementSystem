@@ -93,10 +93,6 @@ const Cloud = {
     return { uid: user.uid, ...profile };
   },
 
-  async promoteToTeacher(uid) {
-    await this.db.collection('users').doc(uid).update({ role: 'teacher' });
-  },
-
   /* ---------- 班級 ---------- */
 
   /* 列出這位老師的所有班級(不含 blob,只取清單需要的欄位) */

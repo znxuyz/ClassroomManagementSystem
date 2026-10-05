@@ -25,9 +25,30 @@ service cloud.firestore {
       return request.auth.token.email.lower();
     }
 
-    /* ---------- 使用者檔案 ---------- */
+    /* ---------- 使用者檔案 ----------
+       role 只能由管理者在 Firebase Console 直接改成 teacher。
+       使用者自己寫不了 —— 否則任何人登入後改個欄位就能建班級,
+       伺服器負擔與資料風險都是打開的。 */
     match /users/{uid} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+      allow read: if signedIn() && request.auth.uid == uid;
+
+      // 新帳號一律是學生
+      allow create: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == 'student';
+
+      // 可以更新暱稱、頭像、登入時間,但 role 必須維持原樣
+      allow update: if signedIn() && request.auth.uid == uid
+                    && request.resource.data.role == resource.data.role;
+
+      allow delete: if false;
+    }
+
+    /* 這個人是不是老師。只看 users 文件裡的 role,
+       而那個欄位只有 Console 改得動。 */
+    function isTeacherAccount() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
     }
 
     /* ---------- 班級 ---------- */
@@ -45,8 +66,9 @@ service cloud.firestore {
       // 只有導師本人能改班級資料,學生完全寫不進來
       allow update, delete: if isTeacherOfThisClass();
 
-      // 建立班級時,teacherUid 必須是自己,不能冒名建給別人
-      allow create: if signedIn()
+      // 建立班級:除了 teacherUid 必須是自己,帳號本身也要是老師。
+      // 學生登入後就算改了前端程式也建不出班級。
+      allow create: if isTeacherAccount()
                     && request.resource.data.teacherUid == request.auth.uid;
 
       /* 測驗題目:學生只讀,老師才能寫 */

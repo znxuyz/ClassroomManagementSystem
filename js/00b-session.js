@@ -45,7 +45,15 @@ const Session = {
     const myClasses = await Cloud.listTeacherClasses(state.user.uid);
 
     if (myClasses.length > 0 || state.user.role === 'teacher') {
-      state.user.role = 'teacher';
+      /* 名下有班級就當老師用 —— 但如果帳號文件上的 role 還不是 teacher,
+         安全規則會擋下「建立新班級」。先講清楚,免得按下去才發現。 */
+      if (state.user.role !== 'teacher') {
+        console.warn('[Session] 這個帳號有班級,但 users 文件的 role 不是 teacher');
+        setTimeout(() => toast(
+          '提醒:這個帳號還沒被標記為老師,無法新增班級。' +
+          '請到 Firebase Console 把 users 裡你的 role 改成 teacher'
+        ), 1200);
+      }
       state.myClasses = myClasses;
       showClassPicker();
       return;
@@ -58,8 +66,9 @@ const Session = {
       return;
     }
 
-    // 沒有任何身份 — 讓使用者自己選要建班(老師)還是等待被加入(學生)
-    showRoleChoice();
+    // 沒有任何身份。老師身分只能由管理者在 Firebase Console 指定,
+    // 所以這裡不給「我是老師」的選項,只告訴他要請老師加入名冊。
+    showNotEnrolled();
   },
 
   async signIn() {
@@ -109,10 +118,6 @@ const Session = {
     const { id } = await Cloud.createClass(
       state.user.uid, className, teacherName, blank
     );
-    if (state.user.role !== 'teacher') {
-      await Cloud.promoteToTeacher(state.user.uid);
-      state.user.role = 'teacher';
-    }
     state.myClasses = await Cloud.listTeacherClasses(state.user.uid);
     await this.openClass(id);
   },

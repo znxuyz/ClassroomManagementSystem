@@ -45,37 +45,32 @@ function useLocalMode() {
   initLocalMode();
 }
 
-/* ---------- 2. 首次登入:選擇身份 ---------- */
+/* ---------- 2. 首次登入:還沒被加入任何班級 ----------
+   這裡刻意不提供「我是老師」。老師身分只能由管理者在 Firebase Console
+   把 users/{uid} 的 role 改成 teacher —— 否則任何人用 Google 登入後
+   都能建班級,伺服器額度與資料都暴露在外。 */
 
-function showRoleChoice() {
+function showNotEnrolled() {
   showGate(`
     <div class="gate-card">
-      <div class="gate-title">歡迎,${escapeHtml(state.user.displayName || state.user.email)}</div>
+      <div class="gate-title">還沒有你的座位</div>
       <div class="gate-desc">
-        系統還不認識你的身份。
+        你已經登入了,但這個信箱還沒被老師加進任何班級。
       </div>
 
       <div class="gate-section">
-        <div class="gate-section-title">我是老師</div>
-        <div class="gate-section-desc">建立你的第一個班級,之後可以再新增(最多不限)。</div>
-        <input type="text" id="gateClassName" class="setup-input" placeholder="班級名稱,例如:四年二班" />
-        <input type="text" id="gateTeacherName" class="setup-input" placeholder="老師稱呼,例如:張老師"
-               value="${escapeHtml(state.user.displayName || '')}" style="margin-top:10px;" />
-        <button class="btn btn-primary btn-block" style="margin-top:12px;"
-                onclick="gateCreateClass()">建立班級</button>
-      </div>
-
-      <div class="gate-section">
-        <div class="gate-section-title">我是學生</div>
+        <div class="gate-section-title">你登入的帳號</div>
+        <div class="gate-account">${escapeHtml(state.user.email)}</div>
         <div class="gate-section-desc">
-          你的信箱 <strong>${escapeHtml(state.user.email)}</strong> 還沒被加入任何班級。<br>
-          請老師用 Excel 匯入名單(需包含這個信箱),然後重新整理此頁。
+          請把這個信箱告訴老師,請老師把它加進班級名冊。<br>
+          加好之後回到這一頁按「重新整理」就會進去了。
         </div>
-        <button class="btn btn-ghost btn-block" onclick="location.reload()">重新整理</button>
+        <button class="btn btn-primary btn-block" style="margin-top:12px;"
+                onclick="location.reload()">重新整理</button>
       </div>
 
       <div class="gate-foot">
-        <a href="#" onclick="Session.signOut(); return false;">登出</a>
+        用錯帳號了?<a href="#" onclick="Session.signOut(); return false;">換一個帳號登入</a>
       </div>
     </div>
   `);
@@ -93,6 +88,17 @@ async function gateCreateClass() {
     await Session.createClass(className, teacherName);
   } catch (e) {
     console.error(e);
+    if (e.code === 'permission-denied') {
+      // 規則只讓 role 是 teacher 的帳號建班級,而那個欄位只有 Console 改得動
+      alert(
+        '建立班級被拒絕:這個帳號還不是老師。\n\n' +
+        '請到 Firebase Console → Firestore Database → users 集合,\n' +
+        `找到你的文件(${state.user.uid}),\n` +
+        '把 role 欄位改成 teacher,然後重新整理這一頁。\n\n' +
+        '這道限制是刻意的:否則任何人用 Google 登入都能建班級。'
+      );
+      return;
+    }
     toast('建立失敗:' + e.message);
   }
 }
