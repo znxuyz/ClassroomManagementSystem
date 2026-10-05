@@ -57,6 +57,24 @@ const StudentApp = {
       });
   },
 
+  /* 找出「我」是名單上的哪一位。
+     老師重新整理名單時學生的 id 會換掉,登入索引卻還指著舊的 id ——
+     那時只用 id 找會找不到人,畫面一片空白。改成找不到就用信箱再找一次,
+     找到了就把 classInfo 的 id 補正,後續的作答、兌換才會寫到對的人身上。 */
+  findMe(list) {
+    const byId = list.find(s => s.id === this.classInfo.studentId);
+    if (byId) return byId;
+
+    const mail = (state.user && state.user.email || '').trim().toLowerCase();
+    const byMail = mail && list.find(s => (s.email || '').trim().toLowerCase() === mail);
+    if (byMail) {
+      console.warn('[學生端] 名冊索引的 studentId 已失效,改用信箱比對');
+      this.classInfo.studentId = byMail.id;
+      return byMail;
+    }
+    return null;
+  },
+
   /* 老師一發分、一結算成績,學生畫面就跟著動。
      排行榜是即時的,搶答結果馬上看得到名次變化。 */
   watch() {
@@ -64,7 +82,7 @@ const StudentApp = {
     this.unsub = Cloud.watchClass(this.classInfo.classId, doc => {
       const blob = doc.blob || {};
       this.allStudents = blob.students || [];
-      this.student = this.allStudents.find(s => s.id === this.classInfo.studentId) || null;
+      this.student = this.findMe(this.allStudents);
 
       this.shopItems = blob.shopItems || [];
       this.readGroups(blob);
@@ -84,7 +102,7 @@ const StudentApp = {
   },
 
   async refresh() {
-    const { classId, studentId } = this.classInfo;
+    const { classId } = this.classInfo;   // studentId 由 findMe() 決定(可能需要用信箱補正)
 
     const doc = await Cloud.loadClass(classId);
     if (!doc) {
@@ -93,7 +111,7 @@ const StudentApp = {
     }
     const blob = doc.blob || {};
     this.allStudents = blob.students || [];
-    this.student = this.allStudents.find(s => s.id === studentId) || null;
+    this.student = this.findMe(this.allStudents);
     this.classRules = blob.rules || [];
     this.shopItems = blob.shopItems || [];
 

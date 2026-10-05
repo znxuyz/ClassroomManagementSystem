@@ -206,14 +206,17 @@ async function syncRosterAfterImport() {
   const withEmail = state.students.filter(s => s.email);
   const without = state.students.length - withEmail.length;
 
-  if (withEmail.length === 0) {
-    toast('名單沒有信箱欄位,學生將無法自行登入');
-    return;
-  }
-
   try {
     await flushCloudSave();   // 先確保 blob 是最新的
+    // 就算沒有人有信箱也要同步 —— 它會把舊的索引清掉。
+    // 早退的話索引會留著指向已經不存在的學生,學生登入後找不到自己,
+    // 畫面壞掉卻又說不出哪裡錯,比乾脆地說「還沒被加入班級」更難查。
     await Cloud.syncRosterIndex(state.classId, state.className, state.students);
+
+    if (withEmail.length === 0) {
+      toast('名單沒有信箱欄位,學生將無法自行登入');
+      return;
+    }
     toast(`✦ ${withEmail.length} 位學生已可用 Google 登入` +
           (without > 0 ? `(${without} 位缺信箱)` : ''));
   } catch (e) {

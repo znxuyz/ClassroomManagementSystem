@@ -19,22 +19,45 @@ function saveSettings() {
 }
 
 /* 一行 = 一位學生:座號,姓名,信箱
-   分隔符號逗號、全形逗號、Tab 都接受;只填姓名也可以。 */
-function parseRosterLine(line) {
-  const parts = line.split(/[,、\t]/).map(s => s.trim());
+   分隔符號逗號、全形逗號、Tab 都接受;只填姓名也可以。
 
-  // 只寫了名字的那一行,座號與信箱回傳 null(= 沒提供),不是空字串(= 清空)。
-  // 不這樣分的話,老師習慣性貼一份純名單就會把全班的座號和信箱洗掉。
+   空白也當分隔符號 —— 但只在「切開後真的像是座號/信箱」時才算。
+   不這樣限制的話,「李 欣怡」這種名字中間有空格的會被拆成兩個人;
+   但如果完全不接受空白,老師把「1 王小明 s1@ms.chc.edu.tw」貼進來,
+   整行會被當成一個名字,全班因此變成沒有信箱的新學生,登入就壞了。
+
+   回傳的 seatNumber / email 有三種值:
+     字串  = 這一行有填
+     ''    = 這一行用逗號明確留白,代表要清空
+     null  = 這一行根本沒提供這個欄位,套用時要保留原值
+   分不開的話,老師貼一份「座號 姓名」就會把全班的信箱洗掉。 */
+function parseRosterLine(line) {
+  const explicit = /[,、\t]/.test(line);
+  let parts = line.split(/[,、\t]/).map(s => s.trim());
+
+  if (!explicit) {
+    const loose = line.split(/\s+/).map(s => s.trim()).filter(Boolean);
+    const looksStructured = loose.length > 1 &&
+      loose.some(p => p.includes('@') || /^\d{1,3}$/.test(p));
+    parts = looksStructured ? loose : [line.trim()];
+  }
+
   if (parts.length === 1) return { seatNumber: null, name: parts[0], email: null };
 
   // 有些人習慣把姓名放前面。哪一格看起來像信箱就當信箱,
   // 純數字的那格就是座號,剩下的是姓名 —— 順序寫反也不會壞。
-  const email = parts.find(p => p.includes('@')) || '';
-  const rest = parts.filter(p => p !== email && p !== '');
-  const seat = rest.find(p => /^\d{1,3}$/.test(p)) || '';
-  const name = rest.filter(p => p !== seat).join(' ') || rest[0] || '';
+  const emailPart = parts.find(p => p.includes('@'));
+  const rest = parts.filter(p => p !== emailPart && p !== '');
+  const seatPart = rest.find(p => /^\d{1,3}$/.test(p));
+  const name = rest.filter(p => p !== seatPart).join(' ') || rest[0] || '';
 
-  return { seatNumber: seat, name, email };
+  // 沒用逗號的那種寫法,沒出現的欄位算「沒提供」,不是「要清空」
+  const miss = explicit ? '' : null;
+  return {
+    seatNumber: seatPart !== undefined ? seatPart : miss,
+    name,
+    email: emailPart !== undefined ? emailPart : miss
+  };
 }
 
 function updateStudents() {
@@ -83,8 +106,25 @@ function updateStudents() {
     return s;
   });
 
-  const removed = state.students.length - used.size;
   const added = updated.length - used.size;
+  const dropped = state.students.filter(s => !used.has(s.id));
+
+  /* 被移除的學生如果身上有資料,一定要先問過。
+     之前這裡是直接刪掉再跳個提示 —— 老師把名單貼錯格式時,
+     全班的積分、守護獸、測驗成績就這樣無聲消失,連同登入權限。 */
+  const withData = dropped.filter(s => (s.totalPoints || 0) > 0 || s.pet);
+  if (withData.length > 0) {
+    const names = withData.slice(0, 8).map(s => s.name).join('、') +
+                  (withData.length > 8 ? ` 等 ${withData.length} 位` : '');
+    if (!confirm(
+      `這份名單會移除 ${dropped.length} 位學生,其中 ${withData.length} 位已經有積分或守護獸:\n\n` +
+      `${names}\n\n` +
+      `他們的積分、守護獸、測驗成績會一併消失,也會無法再登入。\n` +
+      `確定要這樣更新嗎?`
+    )) return;
+  }
+
+  const removed = dropped.length;
   state.students = updated;
   save();
   renderAll();
