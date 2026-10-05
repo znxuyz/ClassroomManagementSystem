@@ -224,7 +224,7 @@ const StudentApp = {
         ${this.tab === 'quiz' ? this.renderQuizTab() : ''}
         ${this.tab === 'shop' ? this.renderShopTab() : ''}
         ${this.tab === 'war'  ? this.renderWarTab()  : ''}
-        ${this.tab === 'help' ? renderHelpSections(HELP.student) : ''}
+        ${this.tab === 'help' ? renderHelpFull('student', this.classRules) : ''}
       </main>
     `;
   },

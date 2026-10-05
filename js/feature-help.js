@@ -8,6 +8,69 @@
    改這裡一個地方,兩端同時更新。
 ============================================ */
 
+/* ============================================
+   規則說明(依班級目前的設定即時產生)
+   ────────────────────────────────────────────
+   刻意不寫死。老師改了積分規則、進化門檻或領地戰的難度分數之後,
+   說明若還停在預設值,就會變成錯的 —— 那比沒有說明更糟。
+============================================ */
+
+function helpRuleSections(rules) {
+  const list = (rules && rules.length ? rules : DEFAULT_RULES);
+  const plus = list.filter(r => r.points > 0);
+  const minus = list.filter(r => r.points < 0);
+
+  const chips = arr => arr.map(r =>
+    `<span class="help-rule ${r.points < 0 ? 'is-minus' : ''}">${escapeHtml(r.name)}
+       <b>${r.points > 0 ? '+' : ''}${r.points}</b></span>`).join('');
+
+  // 進化門檻:從第二階開始才有「還差多少」的意義
+  const stages = STAGE_NAMES.map((name, i) =>
+    `<span class="help-rule">${escapeHtml(name)}
+       <b>${STAGE_THRESHOLDS[i]} 分${i === 0 ? '起' : ''}</b></span>`).join('');
+
+  const diff = Object.values(DIFFICULTY).map(d =>
+    `<span class="help-rule">${escapeHtml(d.label)} <b>+${d.points}</b></span>`).join('');
+
+  return [
+    {
+      icon: '✦',
+      title: '積分怎麼拿',
+      items: [
+        '<strong>老師在課堂上發分</strong>。目前這個班的加分項目:' +
+          `<div class="help-rules">${chips(plus)}</div>`,
+        minus.length
+          ? '也有扣分項目:' + `<div class="help-rules">${chips(minus)}</div>` +
+            '扣分<strong>只扣可用積分</strong>,累積經驗不會減少,所以守護獸不會退化。'
+          : '',
+        '<strong>線上測驗答對</strong>。得分 = 答對題數 × 每題分數,每題幾分由老師在建立測驗時決定,寫在測驗卡片上。',
+        '如果是<strong>搶答類</strong>的測驗(逐題搶答、整份前幾名),只有排進名次的人拿得到分,其他人答對也沒有分 —— 卡片上會寫明。',
+        '<strong>領地戰</strong>答對會得到佔領分(用來搶地,不是個人積分)。'
+      ].filter(Boolean)
+    },
+    {
+      icon: '🐣',
+      title: '守護獸怎麼進化',
+      items: [
+        '看的是<strong>累積經驗</strong>,不是可用積分 —— 換獎品不影響進化。',
+        '目前的門檻:' + `<div class="help-rules">${stages}</div>`,
+        '累積經驗<strong>只會增加</strong>,所以進化之後不會退回去。'
+      ]
+    },
+    {
+      icon: '⬡',
+      title: '領地戰的計分規則',
+      items: [
+        '題目難度決定答對可得的<strong>佔領分</strong>:' + `<div class="help-rules">${diff}</div>`,
+        '一塊地要累積到<strong>門檻分數</strong>才會易主,門檻由老師設定(在領地戰的設定列上看得到)。',
+        '打別組的地會進入<strong>交戰</strong>,在設定的秒數內分數最高、且達到門檻的那一組拿走。',
+        '<strong>每一題每個人只能答一次</strong>,答錯也算用掉了,所以要想清楚再送出。',
+        '只能打<strong>自己領地相鄰</strong>的格子,★ 基地不能被攻佔。'
+      ]
+    }
+  ];
+}
+
 const HELP = {
 
   /* ---------- 學生端 ---------- */
@@ -165,6 +228,12 @@ const HELP = {
   ]
 };
 
+/* 規則在前、操作在後:學生最想知道的是「怎麼拿分」 */
+function renderHelpFull(which, rules) {
+  return renderHelpSections(helpRuleSections(rules)) +
+         renderHelpSections(HELP[which]);
+}
+
 function renderHelpSections(list) {
   return list.map(sec => `
     <section class="help-sec">
@@ -181,6 +250,8 @@ function renderHelpView() {
   const which = active ? active.dataset.subtab : 'helpTeacher';
   const el = document.getElementById(which === 'helpStudent' ? 'helpStudentBody' : 'helpTeacherBody');
   if (!el || el.dataset.done) return;
-  el.innerHTML = renderHelpSections(which === 'helpStudent' ? HELP.student : HELP.teacher);
+  el.innerHTML = which === 'helpStudent'
+    ? renderHelpFull('student', state.rules)
+    : renderHelpSections(HELP.teacher) + renderHelpSections(helpRuleSections(state.rules));
   el.dataset.done = '1';
 }

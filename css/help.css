@@ -77,3 +77,35 @@
 .student-main .help-sec { padding: 16px 16px; }
 .student-main .help-sec-title { font-size: 16px; }
 .student-main .help-list { font-size: 14.5px; }
+
+/* 規則標籤。老師設了幾項就顯示幾項,一眼看完不用讀句子 */
+.help-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 4px;
+}
+
+.help-rule {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-shadow);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.help-rule b {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--forest);
+}
+
+.help-rule b { white-space: nowrap; }
+
+/* 扣分項用紅色,正負一眼分得開 */
+.help-rule.is-minus { border-color: rgba(194, 91, 78, 0.35); }
+.help-rule.is-minus b { color: var(--sick); }
